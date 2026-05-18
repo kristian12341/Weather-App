@@ -3,9 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
     <title>Weather App</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body></body>
-<script src="script.js"></script>
+<body>
+
+    <div class="weather-container">
+        
+        <!-- Search Section -->
+        <div class="search-box">
+            <input type="text" id="city-input" placeholder="Enter a desired city...">
+            <button id="search-btn">Search</button>
+        </div>
+
+        <!-- Weather Display Section -->
+        <div class="weather-info">
+            <h2 id="city-name">City Name</h2>
+            
+            <!-- Icon and Temperature -->
+            <div class="weather-main">
+                <img id="weather-icon" src="" alt="Weather Icon" style="display: none;">
+                <h1 id="temperature">--°C</h1>
+            </div>
+
+            <p id="description">Weather condition</p>
+
+            <!-- Additional Details -->
+            <div class="details">
+                <p id="humidity">Humidity: --%</p>
+                <p id="wind-speed">Wind Speed: -- km/h</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
 </html>
