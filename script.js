@@ -1,4 +1,3 @@
-// 1. Select all the DOM elements we need 
 const cityInput = document.getElementById("city-input");
 const searchBtn = document.getElementById("search-btn");
 const cityName = document.getElementById("city-name");
@@ -8,7 +7,6 @@ const weatherIcon = document.getElementById("weather-icon");
 const windSpeed = document.getElementById("wind-speed");
 const weatherInfo = document.getElementById("weather-info");
 
-// 2. Add event listener for the search form
 searchBtn.addEventListener("click", function() {
     let city = cityInput.value;
     
@@ -19,12 +17,10 @@ searchBtn.addEventListener("click", function() {
     }
 });
 
-// 3. Create a function to fetch the weather with try-catch
 async function fetchWeather(city) {
     showLoading();
 
     try {
-        // Step A: Hit the geocoding endpoint to get Latitude and Longitude
         let geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name=" + city + "&count=1";
         let geoResponse = await fetch(geoUrl);
 
@@ -42,7 +38,6 @@ async function fetchWeather(city) {
         let lon = geoData.results[0].longitude;
         let actualCityName = geoData.results[0].name;
 
-        // Step B: Get the actual weather data from the received lat and lon
         let weatherUrl = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&current_weather=true";
         let weatherResponse = await fetch(weatherUrl);
 
@@ -52,7 +47,6 @@ async function fetchWeather(city) {
 
         let weatherData = await weatherResponse.json();
 
-        // Call the display function with our new data
         displayWeather(weatherData.current_weather, actualCityName);
 
     } catch (error) {
@@ -62,7 +56,6 @@ async function fetchWeather(city) {
     }
 }
 
-// 4. Display Weather Function
 function displayWeather(weather, name) {
     weatherInfo.style.display = "block"; 
     
@@ -70,10 +63,8 @@ function displayWeather(weather, name) {
     temperature.textContent = Math.round(weather.temperature) + "°C";
     windSpeed.textContent = "Wind Speed: " + weather.windspeed + " km/h";
 
-    // Extract if it is day (1) or night (0) from the API
     let isDay = weather.is_day;
 
-    // Call our functions to get text and icons based on code and time of day
     let conditionText = getWeatherDescription(weather.weathercode);
     let iconUrl = getWeatherIcon(weather.weathercode, isDay);
 
@@ -82,7 +73,6 @@ function displayWeather(weather, name) {
     weatherIcon.style.display = "block"; 
 }
 
-// 5. UI Methods for Loading and Errors
 function showLoading() {
     cityName.textContent = "Loading...";
     temperature.textContent = "";
@@ -92,7 +82,6 @@ function showLoading() {
 }
 
 function hideLoading() {
-    // Automatically handled by our display logic
 }
 
 function showError(message) {
@@ -105,7 +94,6 @@ function showError(message) {
     weatherIcon.style.display = "none";
 }
 
-// 6. Complete WMO Weather Mapping Object (56 variations covering Day/Night!)
 const weatherMap = {
     0:  { desc: "Clear sky", iconDay: "01d", iconNight: "01n" },
     1:  { desc: "Mainly clear", iconDay: "02d", iconNight: "02n" },
@@ -137,7 +125,6 @@ const weatherMap = {
     99: { desc: "Thunderstorm with heavy hail", iconDay: "11d", iconNight: "11n" }
 };
 
-// 7. Get Weather Condition Text
 function getWeatherDescription(code) {
     if (weatherMap[code]) {
         return weatherMap[code].desc;
@@ -146,17 +133,16 @@ function getWeatherDescription(code) {
     }
 }
 
-// 8. Get Weather Icon URL
 function getWeatherIcon(code, isDay) {
-    let iconCode = "01d"; // Default to clear day
+    let iconCode = "01d"; 
 
     if (weatherMap[code]) {
         if (isDay === 1) {
-            iconCode = weatherMap[code].iconDay; // Use day icon
+            iconCode = weatherMap[code].iconDay; 
         } else {
-            iconCode = weatherMap[code].iconNight; // Use night icon
+            iconCode = weatherMap[code].iconNight; 
         }
     }
 
-    return "https://openweathermap.org/img/wn/" + iconCode + "@2x.png";
+    return "https://openweathermap.org/img/wn/" + iconCode + "@4x.png";
 }
