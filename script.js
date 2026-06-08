@@ -1,14 +1,18 @@
+const searchForm = document.getElementById("search-form");
 const cityInput = document.getElementById("city-input");
-const searchBtn = document.getElementById("search-btn");
 const cityName = document.getElementById("city-name");
 const temperature = document.getElementById("temperature");
 const weatherCondition = document.getElementById("weather-condition");
 const weatherIcon = document.getElementById("weather-icon");
 const windSpeed = document.getElementById("wind-speed");
 const weatherInfo = document.getElementById("weather-info");
+const loading = document.getElementById("loading");
+const error = document.getElementById("error");
 
-searchBtn.addEventListener("click", function() {
-    let city = cityInput.value;
+// Използваме събитието 'submit' на формата
+searchForm.addEventListener("submit", function(e) {
+    e.preventDefault(); 
+    let city = cityInput.value.trim();
     
     if (city !== "") {
         fetchWeather(city);
@@ -49,100 +53,114 @@ async function fetchWeather(city) {
 
         displayWeather(weatherData.current_weather, actualCityName);
 
-    } catch (error) {
-        showError(error.message);
+    } catch (err) {
+        showError(err.message);
     } finally {
         hideLoading();
     }
 }
 
 function displayWeather(weather, name) {
+    error.style.display = "none";
     weatherInfo.style.display = "block"; 
     
     cityName.textContent = name;
     temperature.textContent = Math.round(weather.temperature) + "°C";
     windSpeed.textContent = "Wind Speed: " + weather.windspeed + " km/h";
 
-    let isDay = weather.is_day;
-
     let conditionText = getWeatherDescription(weather.weathercode);
-    let iconUrl = getWeatherIcon(weather.weathercode, isDay);
+    let iconClass = getWeatherIcon(weather.weathercode);
 
     weatherCondition.textContent = conditionText;
-    weatherIcon.src = iconUrl;
-    weatherIcon.style.display = "block"; 
+    
+    // Прилагане на Font Awesome клас вместо src атрибут
+    weatherIcon.className = "fas " + iconClass;
 }
 
 function showLoading() {
-    cityName.textContent = "Loading...";
-    temperature.textContent = "";
-    weatherCondition.textContent = "";
-    windSpeed.textContent = "";
-    weatherIcon.style.display = "none";
+    weatherInfo.style.display = "none";
+    error.style.display = "none";
+    loading.style.display = "block";
 }
 
 function hideLoading() {
+    loading.style.display = "none";
 }
 
 function showError(message) {
-    weatherInfo.style.display = "block";
-    cityName.textContent = "Error";
-    weatherCondition.textContent = message;
-    
-    temperature.textContent = "";
-    windSpeed.textContent = "";
-    weatherIcon.style.display = "none";
+    weatherInfo.style.display = "none";
+    loading.style.display = "none";
+    error.textContent = message;
+    error.style.display = "block";
 }
 
-const weatherMap = {
-    0:  { desc: "Clear sky", iconDay: "01d", iconNight: "01n" },
-    1:  { desc: "Mainly clear", iconDay: "02d", iconNight: "02n" },
-    2:  { desc: "Partly cloudy", iconDay: "03d", iconNight: "03n" },
-    3:  { desc: "Overcast", iconDay: "04d", iconNight: "04n" },
-    45: { desc: "Fog", iconDay: "50d", iconNight: "50n" },
-    48: { desc: "Depositing rime fog", iconDay: "50d", iconNight: "50n" },
-    51: { desc: "Light Drizzle", iconDay: "09d", iconNight: "09n" },
-    53: { desc: "Moderate Drizzle", iconDay: "09d", iconNight: "09n" },
-    55: { desc: "Dense Drizzle", iconDay: "09d", iconNight: "09n" },
-    56: { desc: "Light Freezing Drizzle", iconDay: "09d", iconNight: "09n" },
-    57: { desc: "Dense Freezing Drizzle", iconDay: "09d", iconNight: "09n" },
-    61: { desc: "Slight Rain", iconDay: "10d", iconNight: "10n" },
-    63: { desc: "Moderate Rain", iconDay: "10d", iconNight: "10n" },
-    65: { desc: "Heavy Rain", iconDay: "10d", iconNight: "10n" },
-    66: { desc: "Light Freezing Rain", iconDay: "13d", iconNight: "13n" },
-    67: { desc: "Heavy Freezing Rain", iconDay: "13d", iconNight: "13n" },
-    71: { desc: "Slight Snowfall", iconDay: "13d", iconNight: "13n" },
-    73: { desc: "Moderate Snowfall", iconDay: "13d", iconNight: "13n" },
-    75: { desc: "Heavy Snowfall", iconDay: "13d", iconNight: "13n" },
-    77: { desc: "Snow Grains", iconDay: "13d", iconNight: "13n" },
-    80: { desc: "Slight Rain Showers", iconDay: "09d", iconNight: "09n" },
-    81: { desc: "Moderate Rain Showers", iconDay: "09d", iconNight: "09n" },
-    82: { desc: "Violent Rain Showers", iconDay: "09d", iconNight: "09n" },
-    85: { desc: "Slight Snow Showers", iconDay: "13d", iconNight: "13n" },
-    86: { desc: "Heavy Snow Showers", iconDay: "13d", iconNight: "13n" },
-    95: { desc: "Thunderstorm", iconDay: "11d", iconNight: "11n" },
-    96: { desc: "Thunderstorm with slight hail", iconDay: "11d", iconNight: "11n" },
-    99: { desc: "Thunderstorm with heavy hail", iconDay: "11d", iconNight: "11n" }
+const weatherConditions = {
+    0: 'Clear sky',
+    1: 'Mainly clear',
+    2: 'Partly cloudy',
+    3: 'Overcast',
+    45: 'Fog',
+    48: 'Depositing rime fog',
+    51: 'Light drizzle',
+    53: 'Moderate drizzle',
+    55: 'Dense drizzle',
+    56: 'Light freezing drizzle',
+    57: 'Dense freezing drizzle',
+    61: 'Slight rain',
+    63: 'Moderate rain',
+    65: 'Heavy rain',
+    66: 'Light freezing rain',
+    67: 'Heavy freezing rain',
+    71: 'Slight snow fall',
+    73: 'Moderate snow fall',
+    75: 'Heavy snow fall',
+    77: 'Snow grains',
+    80: 'Slight rain showers',
+    81: 'Moderate rain showers',
+    82: 'Violent rain showers',
+    85: 'Slight snow showers',
+    86: 'Heavy snow showers',
+    95: 'Thunderstorm',
+    96: 'Thunderstorm with slight hail',
+    99: 'Thunderstorm with heavy hail'
 };
 
 function getWeatherDescription(code) {
-    if (weatherMap[code]) {
-        return weatherMap[code].desc;
-    } else {
-        return "Unknown Condition";
-    }
+    return weatherConditions[code] || "Unknown Condition";
 }
 
-function getWeatherIcon(code, isDay) {
-    let iconCode = "01d"; 
+// Речник за Font Awesome иконки
+function getWeatherIcon(weathercode) {
+    const iconMap = {
+        0: 'fa-sun', 
+        1: 'fa-cloud-sun', 
+        2: 'fa-cloud-sun', 
+        3: 'fa-cloud', 
+        45: 'fa-smog', 
+        48: 'fa-smog', 
+        51: 'fa-cloud-rain', 
+        53: 'fa-cloud-rain', 
+        55: 'fa-cloud-rain', 
+        56: 'fa-cloud-rain', 
+        57: 'fa-cloud-rain', 
+        61: 'fa-cloud-showers-heavy', 
+        63: 'fa-cloud-showers-heavy', 
+        65: 'fa-cloud-showers-heavy', 
+        66: 'fa-cloud-meatball', 
+        67: 'fa-cloud-meatball', 
+        71: 'fa-snowflake', 
+        73: 'fa-snowflake', 
+        75: 'fa-snowflake', 
+        77: 'fa-snowflake', 
+        80: 'fa-cloud-showers-heavy', 
+        81: 'fa-cloud-showers-heavy', 
+        82: 'fa-cloud-showers-heavy', 
+        85: 'fa-snowflake', 
+        86: 'fa-snowflake', 
+        95: 'fa-bolt', 
+        96: 'fa-bolt', 
+        99: 'fa-bolt'
+    };
 
-    if (weatherMap[code]) {
-        if (isDay === 1) {
-            iconCode = weatherMap[code].iconDay; 
-        } else {
-            iconCode = weatherMap[code].iconNight; 
-        }
-    }
-
-    return "https://openweathermap.org/img/wn/" + iconCode + "@4x.png";
+    return iconMap[weathercode] || 'fa-question';
 }

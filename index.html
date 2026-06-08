@@ -5,21 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather App</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
 
     <div class="weather-container">
         
-        <div class="search-box">
-            <input type="text" id="city-input" placeholder="Enter a desired city...">
-            <button id="search-btn">Search</button>
-        </div>
+        <form id="search-form" class="search-box">
+            <input type="text" id="city-input" placeholder="Enter a desired city..." required>
+            <button type="submit" id="search-btn">Search</button>
+        </form>
 
-        <div class="weather-info" id="weather-info">
+        <div class="weather-info" id="weather-info" style="display: none;">
             <h2 id="city-name">City Name</h2>
             
             <div class="weather-main">
-                <img id="weather-icon" src="" alt="Weather Icon" style="display: none;">
+                <i id="weather-icon" class="fas fa-question"></i>
                 <h1 id="temperature">--°C</h1>
             </div>
 
@@ -29,6 +30,9 @@
                 <p id="wind-speed">Wind Speed: -- km/h</p>
             </div>
         </div>
+
+        <div id="loading" class="loading">Loading...</div>
+        <div id="error" class="error"></div>
 
     </div>
 

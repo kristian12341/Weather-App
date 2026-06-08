@@ -83,9 +83,9 @@ h1 {
     margin-bottom: 20px;
 }
 
+/* Обновено за Font Awesome иконки */
 #weather-icon {
-    width: 120px;
-    height: 120px;
+    font-size: 80px; 
     filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
 }
 
@@ -103,7 +103,8 @@ h1 {
 
 .details {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     margin-top: 15px;
 }
 
@@ -116,11 +117,22 @@ h1 {
     letter-spacing: 0.5px;
 }
 
-.loading, .error {
+.loading {
+    display: none;
+    margin-top: 20px;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* Обновен стил за грешката според документа */
+.error {
     display: none;
     margin-top: 20px;
     font-size: 1rem;
-    color: #ff6b6b;
+    background-color: #ff6b6b;
+    color: white;
+    padding: 8px;
+    border-radius: 8px;
 }
 
 @media (max-width: 480px) {
