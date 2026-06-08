@@ -37,7 +37,7 @@ h1 {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     margin-top: 10px;
 }
 
@@ -67,8 +67,33 @@ h1 {
     background: #1a7a8f;
 }
 
+/* Styles for the new history tags */
+.history-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.history-tag {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    padding: 5px 12px;
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.history-tag:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
 .weather-info {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 #city-name {

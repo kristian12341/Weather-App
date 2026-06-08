@@ -10,11 +10,62 @@ const weatherInfo = document.getElementById("weather-info");
 const loading = document.getElementById("loading");
 const error = document.getElementById("error");
 const toggleBtn = document.getElementById("toggle-temp-btn");
-const locationBtn = document.getElementById("location-btn");
+const historyContainer = document.getElementById("search-history"); // New element
 
 // Variables to keep track of temperature state
 let isCelsius = true;
-let lastTempC = null; // Saves the temperature from API
+let lastTempC = null; 
+
+// --- History Functions ---
+
+// Get saved array from LocalStorage or return empty array
+function getHistory() {
+    let saved = localStorage.getItem("searchHistory");
+    return saved ? JSON.parse(saved) : [];
+}
+
+// Save a new city to history
+function saveToHistory(newCity) {
+    let history = getHistory();
+    
+    // Remove city if it's already in the list to avoid duplicates
+    history = history.filter(city => city !== newCity);
+    
+    // Add to the front of the array
+    history.unshift(newCity);
+    
+    // Keep only the last 5 searches
+    history = history.slice(0, 5);
+    
+    // Save back to LocalStorage
+    localStorage.setItem("searchHistory", JSON.stringify(history));
+    
+    // Update the screen
+    renderHistory();
+}
+
+// Show history tags on screen
+function renderHistory() {
+    let history = getHistory();
+    historyContainer.innerHTML = ""; // Clear current tags
+
+    // Create a button for each city
+    history.forEach(city => {
+        let btn = document.createElement("button");
+        btn.className = "history-tag";
+        btn.textContent = city;
+        
+        // When clicked, fill input and search directly
+        btn.addEventListener("click", () => {
+            cityInput.value = city;
+            fetchWeather(city);
+        });
+        
+        historyContainer.appendChild(btn);
+    });
+}
+
+// --- Temperature Functions ---
 
 // Simple math to convert Celsius to Fahrenheit
 function toFahrenheit(celsius) {
@@ -23,7 +74,7 @@ function toFahrenheit(celsius) {
 
 // Check which temp format is selected and update text
 function updateTemperatureDisplay() {
-    if (lastTempC === null) return; // Do nothing if no data
+    if (lastTempC === null) return; 
 
     if (isCelsius) {
         temperature.textContent = `${lastTempC}°C`;
@@ -34,15 +85,16 @@ function updateTemperatureDisplay() {
 
 // When I click the toggle button, change temp format
 toggleBtn.addEventListener("click", () => {
-    isCelsius = !isCelsius; // Flip the flag
+    isCelsius = !isCelsius; 
     updateTemperatureDisplay();
-    // Change button text
     toggleBtn.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
 });
 
+// --- Search and Fetch Functions ---
+
 // Search weather when user submits the form
 searchForm.addEventListener("submit", function(e) {
-    e.preventDefault(); // Stop page from refreshing
+    e.preventDefault(); 
     let city = cityInput.value.trim();
     
     if (city !== "") {
@@ -51,9 +103,6 @@ searchForm.addEventListener("submit", function(e) {
         showError("Please enter a city name!");
     }
 });
-
-// Click the location button to use GPS
-locationBtn.addEventListener("click", loadWeatherByLocation);
 
 // Function to get city name from coordinates (Reverse Geocoding)
 async function getCityNameFromCoords(lat, lon) {
@@ -67,15 +116,12 @@ async function getCityNameFromCoords(lat, lon) {
     }
 }
 
-// Fetch weather using my exact GPS location
+// Fetch weather using exact GPS location
 async function fetchWeatherByCoords(lat, lon) {
     showLoading();
 
     try {
-        // First get the city name
         let actualCityName = await getCityNameFromCoords(lat, lon);
-        
-        // Then get the weather for these coordinates
         let weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
         let weatherResponse = await fetch(weatherUrl);
 
@@ -84,8 +130,6 @@ async function fetchWeatherByCoords(lat, lon) {
         }
 
         let weatherData = await weatherResponse.json();
-        
-        // Show everything on screen
         displayWeather(weatherData.current_weather, actualCityName);
 
     } catch (err) {
@@ -105,28 +149,22 @@ function loadWeatherByLocation() {
     showLoading();
 
     navigator.geolocation.getCurrentPosition(
-        // If user says YES
         (position) => {
             let lat = position.coords.latitude;
             let lon = position.coords.longitude;
             fetchWeatherByCoords(lat, lon);
         },
-        // If user says NO or blocks it
         (err) => {
             showError("Location access denied. Please search manually.");
         }
     );
 }
 
-// Run location check as soon as page loads
-document.addEventListener("DOMContentLoaded", loadWeatherByLocation);
-
 // Standard fetch function for city search
 async function fetchWeather(city) {
     showLoading();
 
     try {
-        // Step 1: Get coordinates for the typed city
         let geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name=" + city + "&count=1";
         let geoResponse = await fetch(geoUrl);
 
@@ -136,7 +174,6 @@ async function fetchWeather(city) {
 
         let geoData = await geoResponse.json();
 
-        // Error if city doesn't exist
         if (!geoData.results || geoData.results.length === 0) {
             throw new Error("City not found. Please try again.");
         }
@@ -145,7 +182,6 @@ async function fetchWeather(city) {
         let lon = geoData.results[0].longitude;
         let actualCityName = geoData.results[0].name;
 
-        // Step 2: Get the weather using the coordinates we found
         let weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
         let weatherResponse = await fetch(weatherUrl);
 
@@ -156,6 +192,9 @@ async function fetchWeather(city) {
         let weatherData = await weatherResponse.json();
 
         displayWeather(weatherData.current_weather, actualCityName);
+        
+        // Save the correct, capitalized city name to history
+        saveToHistory(actualCityName);
 
     } catch (err) {
         showError(err.message);
@@ -164,19 +203,19 @@ async function fetchWeather(city) {
     }
 }
 
+// --- UI Functions ---
+
 // Put the data into the HTML elements
 function displayWeather(weather, name) {
-    error.style.display = "none"; // Hide error box
-    weatherInfo.style.display = "block"; // Show weather box
+    error.style.display = "none"; 
+    weatherInfo.style.display = "block"; 
     
     cityName.textContent = name;
     windSpeed.textContent = `Wind Speed: ${weather.windspeed} km/h`;
 
-    // Save the C temp so toggle button can use it
     lastTempC = Math.round(weather.temperature);
     updateTemperatureDisplay();
 
-    // Change text and icon based on WMO code
     let conditionText = getWeatherDescription(weather.weathercode);
     let iconClass = getWeatherIcon(weather.weathercode);
 
@@ -203,6 +242,14 @@ function showError(message) {
     error.textContent = message;
     error.style.display = "block";
 }
+
+// Run history and location check as soon as page loads
+document.addEventListener("DOMContentLoaded", () => {
+    renderHistory(); // Show tags from local storage
+    loadWeatherByLocation();
+});
+
+// --- Constants ---
 
 // List of weather descriptions by WMO code
 const weatherConditions = {
