@@ -8,18 +8,15 @@ const windSpeed = document.getElementById("wind-speed");
 const weatherInfo = document.getElementById("weather-info");
 const loading = document.getElementById("loading");
 const error = document.getElementById("error");
-
-// Нови променливи за температурата
 const toggleBtn = document.getElementById("toggle-temp-btn");
+
 let isCelsius = true;
 let lastTempC = null;
 
-// Функция за конвертиране към Фаренхайт
 function toFahrenheit(celsius) {
     return (celsius * 9) / 5 + 32;
 }
 
-// Функция за обновяване на текста в DOM
 function updateTemperatureDisplay() {
     if (lastTempC === null) return; 
 
@@ -30,11 +27,9 @@ function updateTemperatureDisplay() {
     }
 }
 
-// Event listener за бутона за превключване
 toggleBtn.addEventListener("click", () => {
     isCelsius = !isCelsius; 
     updateTemperatureDisplay();
-    // Запазваме езика на интерфейса на английски
     toggleBtn.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
 });
 
@@ -48,6 +43,62 @@ searchForm.addEventListener("submit", function(e) {
         showError("Please enter a city name!");
     }
 });
+
+async function getCityNameFromCoords(lat, lon) {
+    try {
+        let response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+        let data = await response.json();
+        let city = data.address.city || data.address.town || data.address.village || "Your Location";
+        return city;
+    } catch (error) {
+        return "Unknown Location";
+    }
+}
+
+async function fetchWeatherByCoords(lat, lon) {
+    showLoading();
+
+    try {
+        let actualCityName = await getCityNameFromCoords(lat, lon);
+        let weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+        let weatherResponse = await fetch(weatherUrl);
+
+        if (!weatherResponse.ok) {
+            throw new Error("Failed to fetch the weather data.");
+        }
+
+        let weatherData = await weatherResponse.json();
+        displayWeather(weatherData.current_weather, actualCityName);
+
+    } catch (err) {
+        showError(err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+function loadWeatherByLocation() {
+    if (!navigator.geolocation) {
+        showError("Браузърът не поддържа геолокация");
+        return;
+    }
+
+    showLoading();
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+            fetchWeatherByCoords(lat, lon);
+        },
+        (err) => {
+            showError("Достъпът до локацията беше отказан");
+        }
+    );
+}
+
+// Зареди при старт на страницата
+document.addEventListener("DOMContentLoaded", loadWeatherByLocation);
 
 async function fetchWeather(city) {
     showLoading();
@@ -70,7 +121,7 @@ async function fetchWeather(city) {
         let lon = geoData.results[0].longitude;
         let actualCityName = geoData.results[0].name;
 
-        let weatherUrl = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&current_weather=true";
+        let weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
         let weatherResponse = await fetch(weatherUrl);
 
         if (weatherResponse.ok === false) {
@@ -95,7 +146,6 @@ function displayWeather(weather, name) {
     cityName.textContent = name;
     windSpeed.textContent = `Wind Speed: ${weather.windspeed} km/h`;
 
-    // Запазваме последната температура в Целзий и обновяваме екрана
     lastTempC = Math.round(weather.temperature);
     updateTemperatureDisplay();
 

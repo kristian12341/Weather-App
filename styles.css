@@ -24,6 +24,7 @@ body {
     max-width: 400px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     text-align: center;
+    position: relative;
 }
 
 h1 {
@@ -37,6 +38,7 @@ h1 {
     justify-content: center;
     gap: 10px;
     margin-bottom: 20px;
+    margin-top: 10px;
 }
 
 #city-input {
@@ -116,7 +118,6 @@ h1 {
     letter-spacing: 0.5px;
 }
 
-/* Стилове за новия бутон */
 .toggle-container {
     margin-top: 25px;
     display: flex;
