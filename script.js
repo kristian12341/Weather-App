@@ -1,3 +1,4 @@
+// Get HTML elements so we can use them later
 const searchForm = document.getElementById("search-form");
 const cityInput = document.getElementById("city-input");
 const cityName = document.getElementById("city-name");
@@ -9,16 +10,20 @@ const weatherInfo = document.getElementById("weather-info");
 const loading = document.getElementById("loading");
 const error = document.getElementById("error");
 const toggleBtn = document.getElementById("toggle-temp-btn");
+const locationBtn = document.getElementById("location-btn");
 
+// Variables to keep track of temperature state
 let isCelsius = true;
-let lastTempC = null;
+let lastTempC = null; // Saves the temperature from API
 
+// Simple math to convert Celsius to Fahrenheit
 function toFahrenheit(celsius) {
     return (celsius * 9) / 5 + 32;
 }
 
+// Check which temp format is selected and update text
 function updateTemperatureDisplay() {
-    if (lastTempC === null) return; 
+    if (lastTempC === null) return; // Do nothing if no data
 
     if (isCelsius) {
         temperature.textContent = `${lastTempC}°C`;
@@ -27,14 +32,17 @@ function updateTemperatureDisplay() {
     }
 }
 
+// When I click the toggle button, change temp format
 toggleBtn.addEventListener("click", () => {
-    isCelsius = !isCelsius; 
+    isCelsius = !isCelsius; // Flip the flag
     updateTemperatureDisplay();
+    // Change button text
     toggleBtn.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
 });
 
+// Search weather when user submits the form
 searchForm.addEventListener("submit", function(e) {
-    e.preventDefault(); 
+    e.preventDefault(); // Stop page from refreshing
     let city = cityInput.value.trim();
     
     if (city !== "") {
@@ -44,6 +52,10 @@ searchForm.addEventListener("submit", function(e) {
     }
 });
 
+// Click the location button to use GPS
+locationBtn.addEventListener("click", loadWeatherByLocation);
+
+// Function to get city name from coordinates (Reverse Geocoding)
 async function getCityNameFromCoords(lat, lon) {
     try {
         let response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
@@ -55,11 +67,15 @@ async function getCityNameFromCoords(lat, lon) {
     }
 }
 
+// Fetch weather using my exact GPS location
 async function fetchWeatherByCoords(lat, lon) {
     showLoading();
 
     try {
+        // First get the city name
         let actualCityName = await getCityNameFromCoords(lat, lon);
+        
+        // Then get the weather for these coordinates
         let weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
         let weatherResponse = await fetch(weatherUrl);
 
@@ -68,6 +84,8 @@ async function fetchWeatherByCoords(lat, lon) {
         }
 
         let weatherData = await weatherResponse.json();
+        
+        // Show everything on screen
         displayWeather(weatherData.current_weather, actualCityName);
 
     } catch (err) {
@@ -77,33 +95,38 @@ async function fetchWeatherByCoords(lat, lon) {
     }
 }
 
+// Ask browser for GPS permission
 function loadWeatherByLocation() {
     if (!navigator.geolocation) {
-        showError("Браузърът не поддържа геолокация");
+        showError("Your browser doesn't support geolocation.");
         return;
     }
 
     showLoading();
 
     navigator.geolocation.getCurrentPosition(
+        // If user says YES
         (position) => {
             let lat = position.coords.latitude;
             let lon = position.coords.longitude;
             fetchWeatherByCoords(lat, lon);
         },
+        // If user says NO or blocks it
         (err) => {
-            showError("Достъпът до локацията беше отказан");
+            showError("Location access denied. Please search manually.");
         }
     );
 }
 
-// Зареди при старт на страницата
+// Run location check as soon as page loads
 document.addEventListener("DOMContentLoaded", loadWeatherByLocation);
 
+// Standard fetch function for city search
 async function fetchWeather(city) {
     showLoading();
 
     try {
+        // Step 1: Get coordinates for the typed city
         let geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name=" + city + "&count=1";
         let geoResponse = await fetch(geoUrl);
 
@@ -113,6 +136,7 @@ async function fetchWeather(city) {
 
         let geoData = await geoResponse.json();
 
+        // Error if city doesn't exist
         if (!geoData.results || geoData.results.length === 0) {
             throw new Error("City not found. Please try again.");
         }
@@ -121,6 +145,7 @@ async function fetchWeather(city) {
         let lon = geoData.results[0].longitude;
         let actualCityName = geoData.results[0].name;
 
+        // Step 2: Get the weather using the coordinates we found
         let weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
         let weatherResponse = await fetch(weatherUrl);
 
@@ -139,16 +164,19 @@ async function fetchWeather(city) {
     }
 }
 
+// Put the data into the HTML elements
 function displayWeather(weather, name) {
-    error.style.display = "none";
-    weatherInfo.style.display = "block"; 
+    error.style.display = "none"; // Hide error box
+    weatherInfo.style.display = "block"; // Show weather box
     
     cityName.textContent = name;
     windSpeed.textContent = `Wind Speed: ${weather.windspeed} km/h`;
 
+    // Save the C temp so toggle button can use it
     lastTempC = Math.round(weather.temperature);
     updateTemperatureDisplay();
 
+    // Change text and icon based on WMO code
     let conditionText = getWeatherDescription(weather.weathercode);
     let iconClass = getWeatherIcon(weather.weathercode);
 
@@ -156,16 +184,19 @@ function displayWeather(weather, name) {
     weatherIcon.className = "fas " + iconClass;
 }
 
+// UI helper to show loading text
 function showLoading() {
     weatherInfo.style.display = "none";
     error.style.display = "none";
     loading.style.display = "block";
 }
 
+// UI helper to hide loading
 function hideLoading() {
     loading.style.display = "none";
 }
 
+// UI helper to show errors in red box
 function showError(message) {
     weatherInfo.style.display = "none";
     loading.style.display = "none";
@@ -173,6 +204,7 @@ function showError(message) {
     error.style.display = "block";
 }
 
+// List of weather descriptions by WMO code
 const weatherConditions = {
     0: 'Clear sky',
     1: 'Mainly clear',
@@ -204,10 +236,12 @@ const weatherConditions = {
     99: 'Thunderstorm with heavy hail'
 };
 
+// Returns the text for the weather condition
 function getWeatherDescription(code) {
     return weatherConditions[code] || "Unknown Condition";
 }
 
+// Maps WMO codes to Font Awesome classes
 function getWeatherIcon(weathercode) {
     const iconMap = {
         0: 'fa-sun', 
