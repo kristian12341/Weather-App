@@ -83,7 +83,6 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* Обновено за Font Awesome иконки */
 #weather-icon {
     font-size: 80px; 
     filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
@@ -117,6 +116,31 @@ h1 {
     letter-spacing: 0.5px;
 }
 
+/* Стилове за новия бутон */
+.toggle-container {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+}
+
+#toggle-temp-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 8px 20px;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#toggle-temp-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
 .loading {
     display: none;
     margin-top: 20px;
@@ -124,7 +148,6 @@ h1 {
     font-weight: 600;
 }
 
-/* Обновен стил за грешката според документа */
 .error {
     display: none;
     margin-top: 20px;

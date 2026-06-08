@@ -9,7 +9,35 @@ const weatherInfo = document.getElementById("weather-info");
 const loading = document.getElementById("loading");
 const error = document.getElementById("error");
 
-// Използваме събитието 'submit' на формата
+// Нови променливи за температурата
+const toggleBtn = document.getElementById("toggle-temp-btn");
+let isCelsius = true;
+let lastTempC = null;
+
+// Функция за конвертиране към Фаренхайт
+function toFahrenheit(celsius) {
+    return (celsius * 9) / 5 + 32;
+}
+
+// Функция за обновяване на текста в DOM
+function updateTemperatureDisplay() {
+    if (lastTempC === null) return; 
+
+    if (isCelsius) {
+        temperature.textContent = `${lastTempC}°C`;
+    } else {
+        temperature.textContent = `${toFahrenheit(lastTempC).toFixed(1)}°F`;
+    }
+}
+
+// Event listener за бутона за превключване
+toggleBtn.addEventListener("click", () => {
+    isCelsius = !isCelsius; 
+    updateTemperatureDisplay();
+    // Запазваме езика на интерфейса на английски
+    toggleBtn.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
+});
+
 searchForm.addEventListener("submit", function(e) {
     e.preventDefault(); 
     let city = cityInput.value.trim();
@@ -65,15 +93,16 @@ function displayWeather(weather, name) {
     weatherInfo.style.display = "block"; 
     
     cityName.textContent = name;
-    temperature.textContent = Math.round(weather.temperature) + "°C";
-    windSpeed.textContent = "Wind Speed: " + weather.windspeed + " km/h";
+    windSpeed.textContent = `Wind Speed: ${weather.windspeed} km/h`;
+
+    // Запазваме последната температура в Целзий и обновяваме екрана
+    lastTempC = Math.round(weather.temperature);
+    updateTemperatureDisplay();
 
     let conditionText = getWeatherDescription(weather.weathercode);
     let iconClass = getWeatherIcon(weather.weathercode);
 
     weatherCondition.textContent = conditionText;
-    
-    // Прилагане на Font Awesome клас вместо src атрибут
     weatherIcon.className = "fas " + iconClass;
 }
 
@@ -129,7 +158,6 @@ function getWeatherDescription(code) {
     return weatherConditions[code] || "Unknown Condition";
 }
 
-// Речник за Font Awesome иконки
 function getWeatherIcon(weathercode) {
     const iconMap = {
         0: 'fa-sun', 
