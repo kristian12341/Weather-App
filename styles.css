@@ -21,7 +21,7 @@ body {
     border-radius: 15px;
     padding: 30px;
     width: 100%;
-    max-width: 450px; /* Slightly wider to fit 5 days nicely */
+    max-width: 450px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     text-align: center;
     position: relative;
@@ -167,48 +167,111 @@ h1 {
     transform: translateY(-2px);
 }
 
-/* --- New Forecast Styles --- */
-.forecast-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+/* --- New Forecast Layout (Hourly & Daily) --- */
+.forecast-section {
     margin-top: 30px;
-    flex-wrap: wrap; /* Allows cards to wrap on very small screens */
+    text-align: left; /* Align text to the left like in the image */
 }
 
-.day-card {
+.section-title {
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Hourly Scrolling Container */
+.hourly-container {
+    display: flex;
+    overflow-x: auto; /* Allows horizontal scrolling */
+    gap: 10px;
+    padding-bottom: 10px;
+}
+
+/* Hide scrollbar for a cleaner look */
+.hourly-container::-webkit-scrollbar {
+    height: 6px;
+}
+.hourly-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.hourly-card {
     background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
-    padding: 15px 10px;
+    padding: 12px 15px;
     min-width: 70px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hourly-time {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.hourly-temp {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* Daily List Container */
+.daily-container {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 5px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.daily-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Remove line from the last item */
+.daily-row:last-child {
+    border-bottom: none;
+}
+
+.daily-day {
+    width: 45px;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.daily-condition {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 10px;
+    font-size: 0.95rem;
+}
+
+.daily-condition i {
+    font-size: 1.3rem;
+    width: 25px; /* Keeps icons aligned */
     text-align: center;
 }
 
-.day-card p {
-    margin: 5px 0;
-}
-
-.day-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-
-.day-card i {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
-}
-
-.temp-max {
+.daily-temps {
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
-.temp-min {
-    font-size: 0.8rem;
-    opacity: 0.8;
+.min-temp {
+    color: rgba(255, 255, 255, 0.7); /* Slightly darker for min temp */
 }
 
 .loading {
@@ -232,28 +295,7 @@ h1 {
     .weather-container {
         padding: 20px;
     }
-
-    h1 {
-        font-size: 1.5rem;
-    }
-
-    #city-input {
-        width: 60%;
-    }
-
-    #search-btn {
-        padding: 10px 15px;
-    }
-
-    #city-name {
-        font-size: 1.5rem;
-    }
-
     #temperature {
         font-size: 2.5rem;
-    }
-
-    #weather-condition {
-        font-size: 1.1rem;
     }
 }

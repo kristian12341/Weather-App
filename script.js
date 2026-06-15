@@ -11,56 +11,44 @@ const loading = document.getElementById("loading");
 const error = document.getElementById("error");
 const toggleBtn = document.getElementById("toggle-temp-btn");
 const historyContainer = document.getElementById("search-history"); 
-const forecastContainer = document.getElementById("forecast"); // Forecast element
 
-// Variables to keep track of temperature state
+// New elements for the advanced forecast layout
+const hourlyContainer = document.getElementById("hourly-forecast");
+const dailyContainer = document.getElementById("daily-forecast"); 
+
+// Variables to keep track of state
 let isCelsius = true;
 let lastTempC = null; 
-let dailyForecastData = null; // Save forecast data for the toggle button
+let currentWeatherData = null;
+let dailyForecastData = null; 
+let hourlyForecastData = null;
 
 // --- History Functions ---
 
-// Get saved array from LocalStorage or return empty array
 function getHistory() {
     let saved = localStorage.getItem("searchHistory");
     return saved ? JSON.parse(saved) : [];
 }
 
-// Save a new city to history
 function saveToHistory(newCity) {
     let history = getHistory();
-    
-    // Remove city if it's already in the list to avoid duplicates
-    history = history.filter(function(city) {
-        return city !== newCity;
-    });
-    
-    // Add to the front of the array
+    history = history.filter(city => city !== newCity);
     history.unshift(newCity);
-    
-    // Keep only the last 5 searches
     history = history.slice(0, 5);
-    
-    // Save back to LocalStorage
     localStorage.setItem("searchHistory", JSON.stringify(history));
-    
-    // Update the screen
     renderHistory();
 }
 
-// Show history tags on screen
 function renderHistory() {
     let history = getHistory();
-    historyContainer.innerHTML = ""; // Clear current tags
+    historyContainer.innerHTML = ""; 
 
-    // Create a button for each city
-    history.forEach(function(city) {
+    history.forEach(city => {
         let btn = document.createElement("button");
         btn.className = "history-tag";
         btn.textContent = city;
         
-        // When clicked, fill input and search directly
-        btn.addEventListener("click", function() {
+        btn.addEventListener("click", () => {
             cityInput.value = city;
             fetchWeather(city);
         });
@@ -76,7 +64,7 @@ function toFahrenheit(celsius) {
     return (celsius * 9) / 5 + 32;
 }
 
-// Check which temp format is selected and update text
+// Update all temperatures on screen (Main, Hourly, and Daily)
 function updateTemperatureDisplay() {
     if (lastTempC === null) return; 
 
@@ -87,14 +75,14 @@ function updateTemperatureDisplay() {
         temperature.textContent = `${toFahrenheit(lastTempC).toFixed(1)}°F`;
     }
 
-    // Re-render forecast if we have data, so it changes to C or F
-    if (dailyForecastData !== null) {
-        renderForecast(dailyForecastData);
+    // Re-render both forecasts to apply C/F change
+    if (dailyForecastData !== null && hourlyForecastData !== null) {
+        renderForecasts();
     }
 }
 
-// When I click the toggle button, change temp format
-toggleBtn.addEventListener("click", function() {
+// Toggle button logic
+toggleBtn.addEventListener("click", () => {
     isCelsius = !isCelsius; 
     updateTemperatureDisplay();
     toggleBtn.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
@@ -102,7 +90,6 @@ toggleBtn.addEventListener("click", function() {
 
 // --- Search and Fetch Functions ---
 
-// Search weather when user submits the form
 searchForm.addEventListener("submit", function(e) {
     e.preventDefault(); 
     let city = cityInput.value.trim();
@@ -114,10 +101,8 @@ searchForm.addEventListener("submit", function(e) {
     }
 });
 
-// Function to get city name from coordinates (Reverse Geocoding)
 async function getCityNameFromCoords(lat, lon) {
     try {
-        // Enforce English language in API response
         let response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`);
         let data = await response.json();
         let city = data.address.city || data.address.town || data.address.village || "Your Location";
@@ -127,15 +112,16 @@ async function getCityNameFromCoords(lat, lon) {
     }
 }
 
-// Fetch weather using exact GPS location
+// Helper: Generates the full API URL including hourly and daily params
+function getApiUrl(lat, lon) {
+    return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+}
+
 async function fetchWeatherByCoords(lat, lon) {
     showLoading();
-
     try {
         let actualCityName = await getCityNameFromCoords(lat, lon);
-        
-        // Added daily forecast parameters to the URL
-        let weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+        let weatherUrl = getApiUrl(lat, lon);
         let weatherResponse = await fetch(weatherUrl);
 
         if (!weatherResponse.ok) {
@@ -143,9 +129,7 @@ async function fetchWeatherByCoords(lat, lon) {
         }
 
         let weatherData = await weatherResponse.json();
-        
         displayWeather(weatherData, actualCityName);
-
     } catch (err) {
         showError(err.message);
     } finally {
@@ -153,7 +137,6 @@ async function fetchWeatherByCoords(lat, lon) {
     }
 }
 
-// Ask browser for GPS permission
 function loadWeatherByLocation() {
     if (!navigator.geolocation) {
         showError("Your browser doesn't support geolocation.");
@@ -163,23 +146,20 @@ function loadWeatherByLocation() {
     showLoading();
 
     navigator.geolocation.getCurrentPosition(
-        function(position) {
+        (position) => {
             let lat = position.coords.latitude;
             let lon = position.coords.longitude;
             fetchWeatherByCoords(lat, lon);
         },
-        function(err) {
+        (err) => {
             showError("Location access denied. Please search manually.");
         }
     );
 }
 
-// Standard fetch function for city search
 async function fetchWeather(city) {
     showLoading();
-
     try {
-        // Enforce English language in geocoding search
         let geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name=" + city + "&count=1&language=en";
         let geoResponse = await fetch(geoUrl);
 
@@ -197,8 +177,7 @@ async function fetchWeather(city) {
         let lon = geoData.results[0].longitude;
         let actualCityName = geoData.results[0].name;
 
-        // Added daily forecast parameters to the URL
-        let weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+        let weatherUrl = getApiUrl(lat, lon);
         let weatherResponse = await fetch(weatherUrl);
 
         if (weatherResponse.ok === false) {
@@ -206,10 +185,7 @@ async function fetchWeather(city) {
         }
 
         let weatherData = await weatherResponse.json();
-
         displayWeather(weatherData, actualCityName);
-        
-        // Save the correct, capitalized english city name to history
         saveToHistory(actualCityName);
 
     } catch (err) {
@@ -221,76 +197,104 @@ async function fetchWeather(city) {
 
 // --- UI Functions ---
 
-// Put the data into the HTML elements
 function displayWeather(data, name) {
     error.style.display = "none"; 
     weatherInfo.style.display = "block"; 
     
-    let current = data.current_weather;
+    currentWeatherData = data.current_weather;
+    dailyForecastData = data.daily;
+    hourlyForecastData = data.hourly;
     
     cityName.textContent = name;
-    windSpeed.textContent = `Wind Speed: ${current.windspeed} km/h`;
+    windSpeed.textContent = `Wind Speed: ${currentWeatherData.windspeed} km/h`;
 
-    lastTempC = Math.round(current.temperature);
+    lastTempC = Math.round(currentWeatherData.temperature);
     
-    // Save daily data and call update
-    dailyForecastData = data.daily;
+    // Updates main temp and renders the forecasts
     updateTemperatureDisplay(); 
 
-    let conditionText = getWeatherDescription(current.weathercode);
-    let iconClass = getWeatherIcon(current.weathercode);
+    let conditionText = getWeatherDescription(currentWeatherData.weathercode);
+    let iconClass = getWeatherIcon(currentWeatherData.weathercode);
 
     weatherCondition.textContent = conditionText;
     weatherIcon.className = "fas " + iconClass;
 }
 
-// Render the 5-day forecast cards
-function renderForecast(dailyData) {
-    forecastContainer.innerHTML = ""; // Clear old forecast
+// Render both Hourly and Daily forecasts
+function renderForecasts() {
+    // 1. Render Hourly Forecast (Horizontal List)
+    hourlyContainer.innerHTML = ""; 
+    
+    // Find the current hour in the array to know where to start
+    let currentTimeString = currentWeatherData.time; 
+    let currentIndex = hourlyForecastData.time.findIndex(t => t === currentTimeString);
+    if (currentIndex === -1) currentIndex = 0; // Fallback
 
-    // Loop starting from 1 to skip today (index 0) and get next 5 days
-    for (let i = 1; i <= 5; i++) {
-        let dateString = dailyData.time[i];
+    // Show the next 8 hours
+    for (let i = currentIndex; i < currentIndex + 8; i++) {
+        let timeString = hourlyForecastData.time[i];
+        let dateObj = new Date(timeString);
+        let hour = dateObj.getHours();
         
-        // Use 'en-US' for English days (Mon, Tue, Wed...)
-        let dayName = new Date(dateString).toLocaleDateString('en-US', { weekday: 'short' });
+        // Format hour to always look like "15:00" instead of "15:0"
+        let displayHour = hour < 10 ? `0${hour}:00` : `${hour}:00`;
         
-        let maxTempC = Math.round(dailyData.temperature_2m_max[i]);
-        let minTempC = Math.round(dailyData.temperature_2m_min[i]);
-        
-        // Format temps based on toggle state
-        let maxTempDisplay = isCelsius ? `${maxTempC}°C` : `${Math.round(toFahrenheit(maxTempC))}°F`;
-        let minTempDisplay = isCelsius ? `${minTempC}°C` : `${Math.round(toFahrenheit(minTempC))}°F`;
-        
-        let iconClass = getWeatherIcon(dailyData.weathercode[i]);
-        
-        // Build the HTML for the card
-        let cardHTML = `
-            <div class="day-card">
-                <p class="day-name">${dayName}</p>
+        let tempC = Math.round(hourlyForecastData.temperature_2m[i]);
+        let tempDisplay = isCelsius ? `${tempC}°` : `${Math.round(toFahrenheit(tempC))}°`;
+        let iconClass = getWeatherIcon(hourlyForecastData.weathercode[i]);
+
+        hourlyContainer.innerHTML += `
+            <div class="hourly-card">
+                <p class="hourly-time">${displayHour}</p>
                 <i class="fas ${iconClass}"></i>
-                <p class="temp-max">${maxTempDisplay}</p>
-                <p class="temp-min">${minTempDisplay}</p>
+                <p class="hourly-temp">${tempDisplay}</p>
             </div>
         `;
+    }
+
+    // 2. Render Daily Forecast (Vertical List like in the image)
+    dailyContainer.innerHTML = ""; 
+
+    // Loop from 1 to 5 (to skip today, which is index 0)
+    for (let i = 1; i <= 5; i++) {
+        let dateString = dailyForecastData.time[i];
+        let dayName = new Date(dateString).toLocaleDateString('en-US', { weekday: 'short' });
         
-        forecastContainer.innerHTML += cardHTML;
+        let maxTempC = Math.round(dailyForecastData.temperature_2m_max[i]);
+        let minTempC = Math.round(dailyForecastData.temperature_2m_min[i]);
+        
+        let maxDisplay = isCelsius ? `${maxTempC}°` : `${Math.round(toFahrenheit(maxTempC))}°`;
+        let minDisplay = isCelsius ? `${minTempC}°` : `${Math.round(toFahrenheit(minTempC))}°`;
+        
+        let code = dailyForecastData.weathercode[i];
+        let iconClass = getWeatherIcon(code);
+        let conditionText = getWeatherDescription(code);
+        
+        dailyContainer.innerHTML += `
+            <div class="daily-row">
+                <div class="daily-day">${dayName}</div>
+                <div class="daily-condition">
+                    <i class="fas ${iconClass}"></i>
+                    <span>${conditionText}</span>
+                </div>
+                <div class="daily-temps">
+                    <span class="min-temp">${minDisplay}</span> / <span class="max-temp">${maxDisplay}</span>
+                </div>
+            </div>
+        `;
     }
 }
 
-// UI helper to show loading text
 function showLoading() {
     weatherInfo.style.display = "none";
     error.style.display = "none";
     loading.style.display = "block";
 }
 
-// UI helper to hide loading
 function hideLoading() {
     loading.style.display = "none";
 }
 
-// UI helper to show errors in red box
 function showError(message) {
     weatherInfo.style.display = "none";
     loading.style.display = "none";
@@ -298,15 +302,13 @@ function showError(message) {
     error.style.display = "block";
 }
 
-// Run history and location check as soon as page loads
-document.addEventListener("DOMContentLoaded", function() {
-    renderHistory(); // Show tags from local storage
+document.addEventListener("DOMContentLoaded", () => {
+    renderHistory(); 
     loadWeatherByLocation();
 });
 
 // --- Constants ---
 
-// List of weather descriptions by WMO code
 const weatherConditions = {
     0: 'Clear sky',
     1: 'Mainly clear',
@@ -338,12 +340,10 @@ const weatherConditions = {
     99: 'Thunderstorm with heavy hail'
 };
 
-// Returns the text for the weather condition
 function getWeatherDescription(code) {
     return weatherConditions[code] || "Unknown Condition";
 }
 
-// Maps WMO codes to Font Awesome classes
 function getWeatherIcon(weathercode) {
     const iconMap = {
         0: 'fa-sun', 
