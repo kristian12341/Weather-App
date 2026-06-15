@@ -5,20 +5,25 @@ const cityName = document.getElementById("city-name");
 const temperature = document.getElementById("temperature");
 const weatherCondition = document.getElementById("weather-condition");
 const weatherIcon = document.getElementById("weather-icon");
-const windSpeed = document.getElementById("wind-speed");
-const weatherInfo = document.getElementById("weather-info");
 const loading = document.getElementById("loading");
 const error = document.getElementById("error");
 const toggleBtn = document.getElementById("toggle-temp-btn");
 const historyContainer = document.getElementById("search-history"); 
 
-// New elements for the advanced forecast layout
+// Forecast containers
 const hourlyContainer = document.getElementById("hourly-forecast");
 const dailyContainer = document.getElementById("daily-forecast"); 
 
-// Variables to keep track of state
+// Specific metric elements
+const feelsLikeEl = document.getElementById("feels-like");
+const humidityEl = document.getElementById("humidity");
+const precipitationEl = document.getElementById("precipitation");
+const windSpeedEl = document.getElementById("wind-speed");
+
+// State Variables
 let isCelsius = true;
 let lastTempC = null; 
+let lastFeelsLikeC = null; 
 let currentWeatherData = null;
 let dailyForecastData = null; 
 let hourlyForecastData = null;
@@ -32,7 +37,7 @@ function getHistory() {
 
 function saveToHistory(newCity) {
     let history = getHistory();
-    history = history.filter(city => city !== newCity);
+    history = history.filter(function(city) { return city !== newCity; });
     history.unshift(newCity);
     history = history.slice(0, 5);
     localStorage.setItem("searchHistory", JSON.stringify(history));
@@ -43,12 +48,12 @@ function renderHistory() {
     let history = getHistory();
     historyContainer.innerHTML = ""; 
 
-    history.forEach(city => {
+    history.forEach(function(city) {
         let btn = document.createElement("button");
         btn.className = "history-tag";
         btn.textContent = city;
         
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", function() {
             cityInput.value = city;
             fetchWeather(city);
         });
@@ -57,43 +62,68 @@ function renderHistory() {
     });
 }
 
+// --- Premium Gradient Icon Styling ---
+function getIconStyle(weatherCode) {
+    let gradient = "";
+    
+    if (weatherCode === 0) {
+        // Pure clear sky -> Solid Gold
+        gradient = "linear-gradient(135deg, #FDB813, #FF8C00)";
+    } else if (weatherCode === 1 || weatherCode === 2) {
+        // Partly Cloudy -> Top-left is Yellow (Sun), Bottom-right is Gray (Cloud)
+        gradient = "linear-gradient(135deg, #FDB813 30%, #a8b2bd 70%)";
+    } else if (weatherCode === 3 || (weatherCode >= 45 && weatherCode <= 48)) {
+        // Overcast / Fog -> Solid elegant Grays
+        gradient = "linear-gradient(135deg, #cbd5e1, #94a3b8)";
+    } else if (weatherCode >= 51 && weatherCode <= 67) {
+        // Rain -> Blue gradients
+        gradient = "linear-gradient(135deg, #7dd3fc, #0284c7)";
+    } else if (weatherCode >= 71 && weatherCode <= 86) {
+        // Snow -> White/Ice blue gradients
+        gradient = "linear-gradient(135deg, #ffffff, #bae6fd)";
+    } else if (weatherCode >= 95) {
+        // Thunderstorm -> Dark Slate and Amber Lightning
+        gradient = "linear-gradient(135deg, #64748b 40%, #fbbf24 100%)";
+    } else {
+        gradient = "linear-gradient(135deg, #ffffff, #e2e8f0)";
+    }
+
+    return `background: ${gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;`;
+}
+
 // --- Temperature Functions ---
 
-// Simple math to convert Celsius to Fahrenheit
 function toFahrenheit(celsius) {
     return (celsius * 9) / 5 + 32;
 }
 
-// Update all temperatures on screen (Main, Hourly, and Daily)
 function updateTemperatureDisplay() {
     if (lastTempC === null) return; 
 
-    // Update main temperature
     if (isCelsius) {
-        temperature.textContent = `${lastTempC}°C`;
+        temperature.textContent = `${lastTempC}°`;
+        feelsLikeEl.textContent = `${lastFeelsLikeC}°`;
     } else {
-        temperature.textContent = `${toFahrenheit(lastTempC).toFixed(1)}°F`;
+        temperature.textContent = `${Math.round(toFahrenheit(lastTempC))}°`;
+        feelsLikeEl.textContent = `${Math.round(toFahrenheit(lastFeelsLikeC))}°`;
     }
 
-    // Re-render both forecasts to apply C/F change
     if (dailyForecastData !== null && hourlyForecastData !== null) {
         renderForecasts();
     }
 }
 
-// Toggle button logic
-toggleBtn.addEventListener("click", () => {
+toggleBtn.addEventListener("click", function() {
     isCelsius = !isCelsius; 
     updateTemperatureDisplay();
     toggleBtn.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
 });
 
-// --- Search and Fetch Functions ---
+// --- Search and Fetch Logic ---
 
 searchForm.addEventListener("submit", function(e) {
     e.preventDefault(); 
     let city = cityInput.value.trim();
-    
     if (city !== "") {
         fetchWeather(city);
     } else {
@@ -105,16 +135,14 @@ async function getCityNameFromCoords(lat, lon) {
     try {
         let response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`);
         let data = await response.json();
-        let city = data.address.city || data.address.town || data.address.village || "Your Location";
-        return city;
+        return data.address.city || data.address.town || data.address.village || "Your Location";
     } catch (error) {
         return "Unknown Location";
     }
 }
 
-// Helper: Generates the full API URL including hourly and daily params
 function getApiUrl(lat, lon) {
-    return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+    return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
 }
 
 async function fetchWeatherByCoords(lat, lon) {
@@ -124,9 +152,7 @@ async function fetchWeatherByCoords(lat, lon) {
         let weatherUrl = getApiUrl(lat, lon);
         let weatherResponse = await fetch(weatherUrl);
 
-        if (!weatherResponse.ok) {
-            throw new Error("Failed to fetch the weather data.");
-        }
+        if (!weatherResponse.ok) throw new Error("Failed to fetch weather data.");
 
         let weatherData = await weatherResponse.json();
         displayWeather(weatherData, actualCityName);
@@ -142,16 +168,12 @@ function loadWeatherByLocation() {
         showError("Your browser doesn't support geolocation.");
         return;
     }
-
     showLoading();
-
     navigator.geolocation.getCurrentPosition(
-        (position) => {
-            let lat = position.coords.latitude;
-            let lon = position.coords.longitude;
-            fetchWeatherByCoords(lat, lon);
+        function(position) {
+            fetchWeatherByCoords(position.coords.latitude, position.coords.longitude);
         },
-        (err) => {
+        function(err) {
             showError("Location access denied. Please search manually.");
         }
     );
@@ -162,13 +184,9 @@ async function fetchWeather(city) {
     try {
         let geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name=" + city + "&count=1&language=en";
         let geoResponse = await fetch(geoUrl);
-
-        if (geoResponse.ok === false) {
-            throw new Error("Failed to connect to the location service.");
-        }
+        if (!geoResponse.ok) throw new Error("Failed to connect to location service.");
 
         let geoData = await geoResponse.json();
-
         if (!geoData.results || geoData.results.length === 0) {
             throw new Error("City not found. Please try again.");
         }
@@ -179,10 +197,7 @@ async function fetchWeather(city) {
 
         let weatherUrl = getApiUrl(lat, lon);
         let weatherResponse = await fetch(weatherUrl);
-
-        if (weatherResponse.ok === false) {
-            throw new Error("Failed to fetch the weather data.");
-        }
+        if (!weatherResponse.ok) throw new Error("Failed to fetch weather data.");
 
         let weatherData = await weatherResponse.json();
         displayWeather(weatherData, actualCityName);
@@ -195,67 +210,72 @@ async function fetchWeather(city) {
     }
 }
 
-// --- UI Functions ---
+// --- UI Rendering ---
 
 function displayWeather(data, name) {
     error.style.display = "none"; 
-    weatherInfo.style.display = "block"; 
+    document.getElementById("weather-info").style.display = "block"; 
     
-    currentWeatherData = data.current_weather;
+    currentWeatherData = data.current; 
     dailyForecastData = data.daily;
     hourlyForecastData = data.hourly;
     
     cityName.textContent = name;
-    windSpeed.textContent = `Wind Speed: ${currentWeatherData.windspeed} km/h`;
-
-    lastTempC = Math.round(currentWeatherData.temperature);
     
-    // Updates main temp and renders the forecasts
+    humidityEl.textContent = `${currentWeatherData.relative_humidity_2m}%`;
+    precipitationEl.textContent = `${currentWeatherData.precipitation} mm`;
+    windSpeedEl.textContent = `${currentWeatherData.wind_speed_10m} km/h`;
+
+    lastTempC = Math.round(currentWeatherData.temperature_2m);
+    lastFeelsLikeC = Math.round(currentWeatherData.apparent_temperature);
+    
     updateTemperatureDisplay(); 
 
-    let conditionText = getWeatherDescription(currentWeatherData.weathercode);
-    let iconClass = getWeatherIcon(currentWeatherData.weathercode);
-
-    weatherCondition.textContent = conditionText;
-    weatherIcon.className = "fas " + iconClass;
+    let code = currentWeatherData.weather_code;
+    weatherCondition.textContent = getWeatherDescription(code);
+    
+    weatherIcon.className = "fas " + getWeatherIcon(code);
+    weatherIcon.setAttribute("style", getIconStyle(code));
 }
 
-// Render both Hourly and Daily forecasts
 function renderForecasts() {
-    // 1. Render Hourly Forecast (Horizontal List)
+    // 1. Hourly Forecast
     hourlyContainer.innerHTML = ""; 
     
-    // Find the current hour in the array to know where to start
-    let currentTimeString = currentWeatherData.time; 
-    let currentIndex = hourlyForecastData.time.findIndex(t => t === currentTimeString);
-    if (currentIndex === -1) currentIndex = 0; // Fallback
+    // FIXED: Extract only the date and hour part (YYYY-MM-DDTHH) for robust matching
+    let currentHourStr = currentWeatherData.time.substring(0, 13); 
+    
+    let currentIndex = hourlyForecastData.time.findIndex(function(t) { 
+        return t.substring(0, 13) === currentHourStr; 
+    });
+    if (currentIndex === -1) currentIndex = 0; 
 
-    // Show the next 8 hours
+    // Show the next 8 hours starting from the correct current hour
     for (let i = currentIndex; i < currentIndex + 8; i++) {
         let timeString = hourlyForecastData.time[i];
         let dateObj = new Date(timeString);
         let hour = dateObj.getHours();
         
-        // Format hour to always look like "15:00" instead of "15:0"
         let displayHour = hour < 10 ? `0${hour}:00` : `${hour}:00`;
-        
         let tempC = Math.round(hourlyForecastData.temperature_2m[i]);
         let tempDisplay = isCelsius ? `${tempC}°` : `${Math.round(toFahrenheit(tempC))}°`;
-        let iconClass = getWeatherIcon(hourlyForecastData.weathercode[i]);
+        
+        let code = hourlyForecastData.weathercode[i];
+        let iconClass = getWeatherIcon(code);
+        let iconStyle = getIconStyle(code);
 
         hourlyContainer.innerHTML += `
             <div class="hourly-card">
                 <p class="hourly-time">${displayHour}</p>
-                <i class="fas ${iconClass}"></i>
+                <i class="fas ${iconClass}" style="${iconStyle}"></i>
                 <p class="hourly-temp">${tempDisplay}</p>
             </div>
         `;
     }
 
-    // 2. Render Daily Forecast (Vertical List like in the image)
+    // 2. Daily Forecast
     dailyContainer.innerHTML = ""; 
 
-    // Loop from 1 to 5 (to skip today, which is index 0)
     for (let i = 1; i <= 5; i++) {
         let dateString = dailyForecastData.time[i];
         let dayName = new Date(dateString).toLocaleDateString('en-US', { weekday: 'short' });
@@ -268,17 +288,18 @@ function renderForecasts() {
         
         let code = dailyForecastData.weathercode[i];
         let iconClass = getWeatherIcon(code);
+        let iconStyle = getIconStyle(code);
         let conditionText = getWeatherDescription(code);
         
         dailyContainer.innerHTML += `
             <div class="daily-row">
                 <div class="daily-day">${dayName}</div>
                 <div class="daily-condition">
-                    <i class="fas ${iconClass}"></i>
+                    <i class="fas ${iconClass}" style="${iconStyle}"></i>
                     <span>${conditionText}</span>
                 </div>
                 <div class="daily-temps">
-                    <span class="min-temp">${minDisplay}</span> / <span class="max-temp">${maxDisplay}</span>
+                    <span class="min-temp">${minDisplay}</span> &nbsp;&nbsp; <span class="max-temp">${maxDisplay}</span>
                 </div>
             </div>
         `;
@@ -286,7 +307,7 @@ function renderForecasts() {
 }
 
 function showLoading() {
-    weatherInfo.style.display = "none";
+    document.getElementById("weather-info").style.display = "none";
     error.style.display = "none";
     loading.style.display = "block";
 }
@@ -295,14 +316,15 @@ function hideLoading() {
     loading.style.display = "none";
 }
 
+// UI helper to show errors in red box
 function showError(message) {
-    weatherInfo.style.display = "none";
+    document.getElementById("weather-info").style.display = "none";
     loading.style.display = "none";
     error.textContent = message;
     error.style.display = "block";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
     renderHistory(); 
     loadWeatherByLocation();
 });
@@ -336,8 +358,8 @@ const weatherConditions = {
     85: 'Slight snow showers',
     86: 'Heavy snow showers',
     95: 'Thunderstorm',
-    96: 'Thunderstorm with slight hail',
-    99: 'Thunderstorm with heavy hail'
+    96: 'Thunderstorm with hail',
+    99: 'Heavy thunderstorm'
 };
 
 function getWeatherDescription(code) {
@@ -375,6 +397,5 @@ function getWeatherIcon(weathercode) {
         96: 'fa-bolt', 
         99: 'fa-bolt'
     };
-
     return iconMap[weathercode] || 'fa-question';
 }

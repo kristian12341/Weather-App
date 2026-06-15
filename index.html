@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App</title>
+    <title>Premium Weather App</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
@@ -12,40 +12,60 @@
     <div class="weather-container">
         
         <form id="search-form" class="search-box">
-            <input type="text" id="city-input" placeholder="Enter a desired city..." required>
-            <button type="submit" id="search-btn">Search</button>
+            <input type="text" id="city-input" placeholder="Search city..." autocomplete="off" required>
+            <button type="submit" id="search-btn"><i class="fas fa-search"></i></button>
         </form>
 
         <div id="search-history" class="history-container"></div>
 
         <div class="weather-info" id="weather-info" style="display: none;">
             <h2 id="city-name">City Name</h2>
+            <p id="weather-condition">Weather condition</p>
             
             <div class="weather-main">
                 <i id="weather-icon" class="fas fa-question"></i>
-                <h1 id="temperature">--°C</h1>
-            </div>
-
-            <p id="weather-condition">Weather condition</p>
-
-            <div class="details">
-                <p id="wind-speed">Wind Speed: -- km/h</p>
+                <h1 id="temperature">--°</h1>
             </div>
 
             <div class="toggle-container">
                 <button id="toggle-temp-btn">Switch to °F</button>
             </div>
 
+            <div class="current-metrics">
+                <div class="metric-card">
+                    <i class="fas fa-temperature-half"></i>
+                    <p class="metric-title">FEELS LIKE</p>
+                    <p class="metric-value" id="feels-like">--°</p>
+                </div>
+                <div class="metric-card">
+                    <i class="fas fa-droplet"></i>
+                    <p class="metric-title">HUMIDITY</p>
+                    <p class="metric-value" id="humidity">--%</p>
+                </div>
+                <div class="metric-card">
+                    <i class="fas fa-umbrella"></i>
+                    <p class="metric-title">PRECIP</p>
+                    <p class="metric-value" id="precipitation">-- mm</p>
+                </div>
+                <div class="metric-card">
+                    <i class="fas fa-wind"></i>
+                    <p class="metric-title">WIND</p>
+                    <p class="metric-value" id="wind-speed">-- km/h</p>
+                </div>
+            </div>
+
             <div class="forecast-section">
-                <p class="section-title">Hourly Forecast</p>
+                <p class="section-title"><i class="far fa-clock"></i> HOURLY FORECAST</p>
                 <div id="hourly-forecast" class="hourly-container"></div>
                 
-                <p class="section-title">5-Day Forecast</p>
+                <p class="section-title"><i class="far fa-calendar-alt"></i> 5-DAY FORECAST</p>
                 <div id="daily-forecast" class="daily-container"></div>
             </div>
         </div>
 
-        <div id="loading" class="loading">Loading...</div>
+        <div id="loading" class="loading">
+            <i class="fas fa-circle-notch fa-spin"></i> Fetching data...
+        </div>
         <div id="error" class="error"></div>
 
     </div>
