@@ -1,24 +1,24 @@
-// Get HTML elements so we can use them later
-const searchForm = document.getElementById("search-form");
-const cityInput = document.getElementById("city-input");
-const cityName = document.getElementById("city-name");
-const temperature = document.getElementById("temperature");
-const weatherCondition = document.getElementById("weather-condition");
-const weatherIcon = document.getElementById("weather-icon");
-const loading = document.getElementById("loading");
-const error = document.getElementById("error");
-const toggleBtn = document.getElementById("toggle-temp-btn");
-const historyContainer = document.getElementById("search-history"); 
+// DOM Elements
+let searchForm = document.getElementById("search-form");
+let cityInput = document.getElementById("city-input");
+let cityName = document.getElementById("city-name");
+let temperature = document.getElementById("temperature");
+let weatherCondition = document.getElementById("weather-condition");
+let weatherIcon = document.getElementById("weather-icon");
+let loading = document.getElementById("loading");
+let error = document.getElementById("error");
+let toggleBtn = document.getElementById("toggle-temp-btn");
+let historyContainer = document.getElementById("search-history"); 
 
 // Forecast containers
-const hourlyContainer = document.getElementById("hourly-forecast");
-const dailyContainer = document.getElementById("daily-forecast"); 
+let hourlyContainer = document.getElementById("hourly-forecast");
+let dailyContainer = document.getElementById("daily-forecast"); 
 
 // Specific metric elements
-const feelsLikeEl = document.getElementById("feels-like");
-const humidityEl = document.getElementById("humidity");
-const precipitationEl = document.getElementById("precipitation");
-const windSpeedEl = document.getElementById("wind-speed");
+let feelsLikeEl = document.getElementById("feels-like");
+let humidityEl = document.getElementById("humidity");
+let precipitationEl = document.getElementById("precipitation");
+let windSpeedEl = document.getElementById("wind-speed");
 
 // State Variables
 let isCelsius = true;
@@ -32,7 +32,11 @@ let hourlyForecastData = null;
 
 function getHistory() {
     let saved = localStorage.getItem("searchHistory");
-    return saved ? JSON.parse(saved) : [];
+    try {
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        return [];
+    }
 }
 
 function saveToHistory(newCity) {
@@ -62,33 +66,51 @@ function renderHistory() {
     });
 }
 
-// --- Premium Gradient Icon Styling ---
+// --- Dynamic Styling (Живият Интерфейс) ---
+
+// Функция за преливките на иконите
 function getIconStyle(weatherCode) {
     let gradient = "";
-    
     if (weatherCode === 0) {
-        // Pure clear sky -> Solid Gold
         gradient = "linear-gradient(135deg, #FDB813, #FF8C00)";
     } else if (weatherCode === 1 || weatherCode === 2) {
-        // Partly Cloudy -> Top-left is Yellow (Sun), Bottom-right is Gray (Cloud)
         gradient = "linear-gradient(135deg, #FDB813 30%, #a8b2bd 70%)";
     } else if (weatherCode === 3 || (weatherCode >= 45 && weatherCode <= 48)) {
-        // Overcast / Fog -> Solid elegant Grays
         gradient = "linear-gradient(135deg, #cbd5e1, #94a3b8)";
     } else if (weatherCode >= 51 && weatherCode <= 67) {
-        // Rain -> Blue gradients
         gradient = "linear-gradient(135deg, #7dd3fc, #0284c7)";
     } else if (weatherCode >= 71 && weatherCode <= 86) {
-        // Snow -> White/Ice blue gradients
         gradient = "linear-gradient(135deg, #ffffff, #bae6fd)";
     } else if (weatherCode >= 95) {
-        // Thunderstorm -> Dark Slate and Amber Lightning
         gradient = "linear-gradient(135deg, #64748b 40%, #fbbf24 100%)";
     } else {
         gradient = "linear-gradient(135deg, #ffffff, #e2e8f0)";
     }
-
+    
     return `background: ${gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;`;
+}
+
+// Функция за цвета на аурата около кутията
+function getAuraColor(weatherCode) {
+    if (weatherCode === 0) return "rgba(253, 184, 19, 0.35)"; // Златно
+    if (weatherCode >= 1 && weatherCode <= 3) return "rgba(255, 255, 255, 0.15)"; // Бяло
+    if (weatherCode >= 51 && weatherCode <= 67) return "rgba(2, 132, 199, 0.35)"; // Синьо
+    if (weatherCode >= 95) return "rgba(251, 191, 36, 0.3)"; // Жълто-оранжево
+    return "rgba(255, 255, 255, 0.15)";
+}
+
+// Задвижва анимациите и светлините спрямо времето
+function updateLivingInterface(temp, wind, code, cityNameText) {
+    // Ускорява дишането на кутията спрямо вятъра
+    let pulseSeconds = Math.max(1.5, 8 - (wind / 5));
+    document.documentElement.style.setProperty('--wind-pulse', pulseSeconds + 's');
+
+    // Сменя цвета на аурата
+    let aura = getAuraColor(code);
+    document.documentElement.style.setProperty('--aura-color', aura);
+
+    // Сменя таба в браузъра (пр. 22°C | Sofia)
+    document.title = Math.round(temp) + "°C | " + cityNameText;
 }
 
 // --- Temperature Functions ---
@@ -101,11 +123,11 @@ function updateTemperatureDisplay() {
     if (lastTempC === null) return; 
 
     if (isCelsius) {
-        temperature.textContent = `${lastTempC}°`;
-        feelsLikeEl.textContent = `${lastFeelsLikeC}°`;
+        temperature.textContent = lastTempC + "°";
+        feelsLikeEl.textContent = lastFeelsLikeC + "°";
     } else {
-        temperature.textContent = `${Math.round(toFahrenheit(lastTempC))}°`;
-        feelsLikeEl.textContent = `${Math.round(toFahrenheit(lastFeelsLikeC))}°`;
+        temperature.textContent = Math.round(toFahrenheit(lastTempC)) + "°";
+        feelsLikeEl.textContent = Math.round(toFahrenheit(lastFeelsLikeC)) + "°";
     }
 
     if (dailyForecastData !== null && hourlyForecastData !== null) {
@@ -152,7 +174,7 @@ async function fetchWeatherByCoords(lat, lon) {
         let weatherUrl = getApiUrl(lat, lon);
         let weatherResponse = await fetch(weatherUrl);
 
-        if (!weatherResponse.ok) throw new Error("Failed to fetch weather data.");
+        if (weatherResponse.ok === false) throw new Error("Failed to fetch weather data.");
 
         let weatherData = await weatherResponse.json();
         displayWeather(weatherData, actualCityName);
@@ -165,7 +187,7 @@ async function fetchWeatherByCoords(lat, lon) {
 
 function loadWeatherByLocation() {
     if (!navigator.geolocation) {
-        showError("Your browser doesn't support geolocation.");
+        showError("Geolocation is not supported by your browser.");
         return;
     }
     showLoading();
@@ -184,7 +206,7 @@ async function fetchWeather(city) {
     try {
         let geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name=" + city + "&count=1&language=en";
         let geoResponse = await fetch(geoUrl);
-        if (!geoResponse.ok) throw new Error("Failed to connect to location service.");
+        if (geoResponse.ok === false) throw new Error("Failed to connect to location service.");
 
         let geoData = await geoResponse.json();
         if (!geoData.results || geoData.results.length === 0) {
@@ -197,7 +219,7 @@ async function fetchWeather(city) {
 
         let weatherUrl = getApiUrl(lat, lon);
         let weatherResponse = await fetch(weatherUrl);
-        if (!weatherResponse.ok) throw new Error("Failed to fetch weather data.");
+        if (weatherResponse.ok === false) throw new Error("Failed to fetch weather data.");
 
         let weatherData = await weatherResponse.json();
         displayWeather(weatherData, actualCityName);
@@ -222,9 +244,10 @@ function displayWeather(data, name) {
     
     cityName.textContent = name;
     
-    humidityEl.textContent = `${currentWeatherData.relative_humidity_2m}%`;
-    precipitationEl.textContent = `${currentWeatherData.precipitation} mm`;
-    windSpeedEl.textContent = `${currentWeatherData.wind_speed_10m} km/h`;
+    humidityEl.textContent = currentWeatherData.relative_humidity_2m + "%";
+    precipitationEl.textContent = currentWeatherData.precipitation + " mm";
+    let currentWind = currentWeatherData.wind_speed_10m;
+    windSpeedEl.textContent = currentWind + " km/h";
 
     lastTempC = Math.round(currentWeatherData.temperature_2m);
     lastFeelsLikeC = Math.round(currentWeatherData.apparent_temperature);
@@ -232,8 +255,11 @@ function displayWeather(data, name) {
     updateTemperatureDisplay(); 
 
     let code = currentWeatherData.weather_code;
-    weatherCondition.textContent = getWeatherDescription(code);
     
+    // Включваме живия ефект!
+    updateLivingInterface(lastTempC, currentWind, code, name);
+
+    weatherCondition.textContent = getWeatherDescription(code);
     weatherIcon.className = "fas " + getWeatherIcon(code);
     weatherIcon.setAttribute("style", getIconStyle(code));
 }
@@ -242,7 +268,6 @@ function renderForecasts() {
     // 1. Hourly Forecast
     hourlyContainer.innerHTML = ""; 
     
-    // FIXED: Extract only the date and hour part (YYYY-MM-DDTHH) for robust matching
     let currentHourStr = currentWeatherData.time.substring(0, 13); 
     
     let currentIndex = hourlyForecastData.time.findIndex(function(t) { 
@@ -250,15 +275,14 @@ function renderForecasts() {
     });
     if (currentIndex === -1) currentIndex = 0; 
 
-    // Show the next 8 hours starting from the correct current hour
     for (let i = currentIndex; i < currentIndex + 8; i++) {
         let timeString = hourlyForecastData.time[i];
         let dateObj = new Date(timeString);
         let hour = dateObj.getHours();
         
-        let displayHour = hour < 10 ? `0${hour}:00` : `${hour}:00`;
+        let displayHour = hour < 10 ? "0" + hour + ":00" : hour + ":00";
         let tempC = Math.round(hourlyForecastData.temperature_2m[i]);
-        let tempDisplay = isCelsius ? `${tempC}°` : `${Math.round(toFahrenheit(tempC))}°`;
+        let tempDisplay = isCelsius ? tempC + "°" : Math.round(toFahrenheit(tempC)) + "°";
         
         let code = hourlyForecastData.weathercode[i];
         let iconClass = getWeatherIcon(code);
@@ -283,8 +307,8 @@ function renderForecasts() {
         let maxTempC = Math.round(dailyForecastData.temperature_2m_max[i]);
         let minTempC = Math.round(dailyForecastData.temperature_2m_min[i]);
         
-        let maxDisplay = isCelsius ? `${maxTempC}°` : `${Math.round(toFahrenheit(maxTempC))}°`;
-        let minDisplay = isCelsius ? `${minTempC}°` : `${Math.round(toFahrenheit(minTempC))}°`;
+        let maxDisplay = isCelsius ? maxTempC + "°" : Math.round(toFahrenheit(maxTempC)) + "°";
+        let minDisplay = isCelsius ? minTempC + "°" : Math.round(toFahrenheit(minTempC)) + "°";
         
         let code = dailyForecastData.weathercode[i];
         let iconClass = getWeatherIcon(code);
@@ -316,7 +340,6 @@ function hideLoading() {
     loading.style.display = "none";
 }
 
-// UI helper to show errors in red box
 function showError(message) {
     document.getElementById("weather-info").style.display = "none";
     loading.style.display = "none";
@@ -331,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // --- Constants ---
 
-const weatherConditions = {
+let weatherConditions = {
     0: 'Clear sky',
     1: 'Mainly clear',
     2: 'Partly cloudy',
@@ -367,7 +390,7 @@ function getWeatherDescription(code) {
 }
 
 function getWeatherIcon(weathercode) {
-    const iconMap = {
+    let iconMap = {
         0: 'fa-sun', 
         1: 'fa-cloud-sun', 
         2: 'fa-cloud-sun', 

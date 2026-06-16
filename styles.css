@@ -1,3 +1,9 @@
+/* --- ДИНАМИЧНИ ПРОМЕНЛИВИ ЗА ЖИВИЯ ИНТЕРФЕЙС --- */
+:root {
+    --wind-pulse: 5s; 
+    --aura-color: rgba(255, 255, 255, 0.1); 
+}
+
 /* --- BASE RESET & PREMIUM TYPOGRAPHY --- */
 * {
     margin: 0;
@@ -14,9 +20,10 @@ body {
     align-items: flex-start;
     min-height: 100vh;
     padding: 40px 20px;
+    overflow-x: hidden;
 }
 
-/* --- GLASSMORPHISM CONTAINER --- */
+/* --- GLASSMORPHISM & LIVING CONTAINER --- */
 .weather-container {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(25px);
@@ -26,10 +33,18 @@ body {
     padding: 40px 30px;
     width: 100%;
     max-width: 480px;
-    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
     text-align: center;
     position: relative;
-    overflow: hidden;
+    /* Възстановяваме дишането и светещата аура */
+    animation: breathe var(--wind-pulse) infinite ease-in-out;
+    box-shadow: 0 0 50px var(--aura-color), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: box-shadow 1.5s ease;
+}
+
+/* Анимацията за дишането */
+@keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.015); }
 }
 
 /* --- SEARCH BOX --- */
@@ -139,7 +154,7 @@ body {
 
 #temperature {
     font-size: 5.5rem;
-    font-weight: 400; /* FIXED: Slightly bolder font weight as requested */
+    font-weight: 400; 
     letter-spacing: -2px;
     margin-left: -10px; 
 }
