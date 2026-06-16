@@ -1,16 +1,10 @@
-/* ========================================================= */
-/* DYNAMIC VARIABLES FOR LIVING INTERFACE */
-/* Updates based on wind speed and weather conditions */
-/* ========================================================= */
+/* --- ДИНАМИЧНИ ПРОМЕНЛИВИ ЗА ЖИВИЯ ИНТЕРФЕЙС --- */
 :root {
-    --wind-pulse: 5s;  /* Animation duration for breathing effect (updated by JS) */
-    --aura-color: rgba(255, 255, 255, 0.1);  /* Glow color around main container (matches weather) */
+    --wind-pulse: 5s; 
+    --aura-color: rgba(255, 255, 255, 0.1); 
 }
 
-/* ========================================================= */
-/* RESET & PREMIUM TYPOGRAPHY */
-/* Normalize browser defaults and set up font system */
-/* ========================================================= */
+/* --- BASE RESET & PREMIUM TYPOGRAPHY --- */
 * {
     margin: 0;
     padding: 0;
@@ -18,12 +12,9 @@
 }
 
 body {
-    /* Use system fonts for best performance and native appearance */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    /* Dark blue gradient background for the entire page */
     background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
     color: #ffffff;
-    /* Center the weather container and allow scrolling if needed */
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -32,12 +23,8 @@ body {
     overflow-x: hidden;
 }
 
-/* ========================================================= */
-/* GLASSMORPHISM & LIVING CONTAINER */
-/* Main container with frosted glass effect and animations */
-/* ========================================================= */
+/* --- GLASSMORPHISM & LIVING CONTAINER --- */
 .weather-container {
-    /* Frosted glass effect with semi-transparent white background */
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
@@ -46,47 +33,34 @@ body {
     width: 100%;
     max-width: 480px;
     position: relative;
-    /* Breathing animation that speeds up with wind */
     animation: breathe var(--wind-pulse) infinite ease-in-out;
-    /* Dynamic glow effect that changes with weather type */
     box-shadow: 0 0 50px var(--aura-color), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     transition: box-shadow 1.5s ease;
 }
 
-/* Subtle breathing animation: container scales up and down based on wind speed */
 @keyframes breathe {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.01); }  /* Only 1% scale for subtle effect */
+    50% { transform: scale(1.01); }
 }
 
-/* ========================================================= */
-/* WEATHER EFFECTS ENGINE */
-/* Renders rain, snow, and stars dynamically */
-/* ========================================================= */
+/* --- WEATHER FX ENGINE --- */
 .weather-fx {
-    /* Overlay for effect particles, doesn't block interactions */
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    pointer-events: none;  /* Don't block clicks on elements below */
+    pointer-events: none; 
     z-index: 0;
     border-radius: 35px;
-    overflow: hidden;  /* Clip particles to container shape */
+    overflow: hidden;
 }
 
 .content-layer {
-    /* Sits on top of effect particles so they appear in background */
     position: relative;
     z-index: 1;
     padding: 40px 30px;
     text-align: center;
 }
 
-/* ========================================================= */
-/* WEATHER PARTICLE ANIMATIONS */
-/* Raindrops, snowflakes, and stars with physics-inspired motion */
-/* ========================================================= */
-
-/* Raindrop animation: fast vertical fall */
+/* Effects animations */
 .raindrop {
     position: absolute;
     width: 2px;
@@ -95,83 +69,73 @@ body {
     animation: rainFall linear infinite;
 }
 @keyframes rainFall {
-    0% { transform: translateY(-20px); opacity: 1; }  /* Start above container */
-    100% { transform: translateY(800px); opacity: 0; }  /* Fade out as it falls */
+    0% { transform: translateY(-20px); opacity: 1; }
+    100% { transform: translateY(800px); opacity: 0; }
 }
 
-/* Snowflake animation: slower fall with horizontal drift */
 .snowflake {
     position: absolute;
     width: 6px;
     height: 6px;
     background: rgba(255, 255, 255, 0.8);
     border-radius: 50%;
-    box-shadow: 0 0 5px rgba(255,255,255,0.8);  /* Glow effect */
+    box-shadow: 0 0 5px rgba(255,255,255,0.8);
     animation: snowFall linear infinite;
 }
 @keyframes snowFall {
-    0% { transform: translateY(-20px) translateX(0); opacity: 1; }  /* Start above */
-    50% { transform: translateY(400px) translateX(20px); }  /* Drift right midway */
-    100% { transform: translateY(800px) translateX(-20px); opacity: 0; }  /* Drift left and fade */
+    0% { transform: translateY(-20px) translateX(0); opacity: 1; }
+    50% { transform: translateY(400px) translateX(20px); }
+    100% { transform: translateY(800px) translateX(-20px); opacity: 0; }
 }
 
-/* Star animation: twinkling effect for clear nights */
 .star {
     position: absolute;
     width: 3px;
     height: 3px;
     background: #fff;
     border-radius: 50%;
-    box-shadow: 0 0 8px #fff;  /* Glow for star effect */
+    box-shadow: 0 0 8px #fff;
     animation: twinkle ease-in-out infinite;
 }
 @keyframes twinkle {
-    0%, 100% { opacity: 0.2; transform: scale(0.8); }  /* Dim and small */
-    50% { opacity: 1; transform: scale(1.2); }  /* Bright and larger */
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
 }
 
-/* ========================================================= */
-/* SEARCH BOX */
-/* Input field with modern styling and focus states */
-/* ========================================================= */
+/* --- SEARCH BOX (ФИКСИРАН UI) --- */
 .search-box {
-    /* Flex layout to position input and button side-by-side */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.2);  /* Semi-transparent dark background */
+    background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    padding: 8px 8px 8px 20px;
+    padding: 6px 6px 6px 18px; /* Симетричен вътрешен падинг */
     margin-bottom: 25px;
-    transition: all 0.3s ease;  /* Smooth animation on focus */
+    transition: all 0.3s ease;
 }
 
-/* Brighten search box when focused */
 .search-box:focus-within {
     background: rgba(0, 0, 0, 0.3);
     border-color: rgba(255, 255, 255, 0.3);
 }
-}
 
 #city-input {
-    /* Take up remaining space in the flex container */
-    flex: 1;
-    background: transparent;  /* Inherit background from search-box */
+    flex: 1; /* Разпъва полето за писане да заеме цялото свободно място */
+    background: transparent;
     border: none;
     color: #ffffff;
     font-size: 1.1rem;
-    outline: none;  /* Remove default browser outline */
+    outline: none;
     font-weight: 400;
+    width: 100%; /* Предотвратява свиването на текстовото поле */
 }
 
-/* Light placeholder text color for accessibility */
 #city-input::placeholder {
     color: rgba(255, 255, 255, 0.4);
 }
 
 #search-btn {
-    /* Small button on the right side of the search box */
     background: rgba(255, 255, 255, 0.1);
     color: #ffffff;
     border: none;
@@ -183,20 +147,16 @@ body {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    transition: all 0.2s ease;  /* Smooth hover effect */
+    transition: all 0.2s ease;
+    flex-shrink: 0; /* Подсигурява че бутонът няма да се деформира */
 }
 
 #search-btn:hover {
-    /* Brighten button on hover */
     background: rgba(255, 255, 255, 0.25);
 }
 
-/* ========================================================= */
-/* SEARCH HISTORY TAGS */
-/* Quick-access buttons for recently searched cities */
-/* ========================================================= */
+/* --- HISTORY --- */
 .history-container {
-    /* Flexbox for wrapping tags */
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -205,7 +165,6 @@ body {
 }
 
 .history-tag {
-    /* Semi-transparent tag button */
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
@@ -217,32 +176,26 @@ body {
 }
 
 .history-tag:hover {
-    /* Brighten and solidify on hover */
     background: rgba(255, 255, 255, 0.1);
     color: #ffffff;
 }
 
-/* ========================================================= */
-/* MAIN WEATHER DISPLAY */
-/* Large temperature display with weather condition */
-/* ========================================================= */
+/* --- MAIN WEATHER DISPLAY --- */
 #city-name {
     font-size: 2.2rem;
     font-weight: 500;
     margin-bottom: 2px;
-    letter-spacing: 0.5px;  /* Subtle spacing for luxury feel */
+    letter-spacing: 0.5px;
 }
 
-/* Weather condition description text */
 #weather-condition {
     font-size: 1.2rem;
     font-weight: 400;
     color: rgba(255, 255, 255, 0.7);
     margin-bottom: 20px;
-    text-transform: capitalize;  /* Capitalize first letter of description */
+    text-transform: capitalize; 
 }
 
-/* Flex container for icon and temperature */
 .weather-main {
     display: flex;
     align-items: center;
@@ -251,18 +204,16 @@ body {
     margin-bottom: 10px;
 }
 
-/* Large animated weather icon with gradient fill */
 #weather-icon {
-    font-size: 85px;  /* Very large icon */
-    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));  /* Shadow for depth */
+    font-size: 85px; 
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
 }
 
-/* Massive temperature display */
 #temperature {
     font-size: 5.5rem;
-    font-weight: 400;
-    letter-spacing: -2px;  /* Tight spacing for large text */
-    margin-left: -10px;  /* Optical adjustment */
+    font-weight: 400; 
+    letter-spacing: -2px;
+    margin-left: -10px; 
 }
 
 .toggle-container {
@@ -271,9 +222,8 @@ body {
     margin-bottom: 35px;
 }
 
-/* Temperature unit toggle button with hover effects */
 #toggle-temp-btn {
-    background: rgba(255, 255, 255, 0.08);  /* Subtle semi-transparent background */
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 25px;
     padding: 12px 35px;
@@ -282,33 +232,27 @@ body {
     font-weight: 600;
     letter-spacing: 0.5px;
     cursor: pointer;
-    transition: all 0.3s ease;  /* Smooth animation */
+    transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 #toggle-temp-btn:hover {
-    /* Lift up and brighten on hover */
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* ========================================================= */
-/* METRICS DASHBOARD */
-/* Grid of current weather metrics (feels like, humidity, etc.) */
-/* ========================================================= */
+/* --- METRICS DASHBOARD --- */
 .current-metrics {
-    /* 4 columns on desktop, responsive grid */
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr); 
     gap: 10px;
     margin-bottom: 20px;
     padding-top: 25px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);  /* Visual separator */
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .metric-card {
-    /* Vertical flex layout for icon, label, value */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -317,42 +261,37 @@ body {
 }
 
 .metric-card i {
-    /* Icon styling */
     font-size: 1.2rem;
     margin-bottom: 8px;
-    color: rgba(255, 255, 255, 0.6);  /* Dimmer than main text */
+    color: rgba(255, 255, 255, 0.6); 
 }
 
 .metric-title {
-    /* Small uppercase labels */
     font-size: 0.65rem;
     text-transform: uppercase;
-    letter-spacing: 1px;  /* Wide letter spacing for emphasis */
+    letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.5);
     font-weight: 600;
     margin-bottom: 4px;
 }
 
 .metric-value {
-    /* The actual metric value */
     font-size: 0.95rem;
     font-weight: 500;
 }
 
 .solar-metrics {
-    /* Grid for UV, sunrise, sunset cards */
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-bottom: 35px;
-    background: rgba(0, 0, 0, 0.15);  /* Subtle background for distinction */
+    background: rgba(0, 0, 0, 0.15);
     border-radius: 20px;
     padding: 15px;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .solar-card {
-    /* Horizontal layout for these cards */
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -362,7 +301,7 @@ body {
 }
 
 .solar-card i {
-    font-size: 1.5rem;  /* Larger icons for these cards */
+    font-size: 1.5rem;
 }
 
 .solar-title {
@@ -378,10 +317,7 @@ body {
     font-weight: 600;
 }
 
-/* ========================================================= */
-/* FORECAST SECTIONS */
-/* Hourly and 5-day weather forecasts */
-/* ========================================================= */
+/* --- FORECAST SECTIONS --- */
 .forecast-section {
     text-align: left;
     background: rgba(0, 0, 0, 0.15);
@@ -390,7 +326,6 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Section title with icons (HOURLY FORECAST, 5-DAY FORECAST) */
 .section-title {
     font-size: 0.75rem;
     font-weight: 600;
@@ -403,43 +338,38 @@ body {
     gap: 6px;
 }
 
-/* Add visual separator before second forecast section */
 .section-title:last-of-type {
     margin-top: 30px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 20px;
 }
 
-/* Horizontal scrollable container for hourly forecast */
+/* HOURLY SCROLL */
 .hourly-container {
     display: flex;
-    overflow-x: auto;  /* Enable horizontal scrolling */
+    overflow-x: auto; 
     gap: 15px;
     padding-bottom: 10px;
 }
-
-/* Custom scrollbar styling */
 .hourly-container::-webkit-scrollbar { height: 4px; }
 .hourly-container::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 10px;
 }
 
-/* Individual hourly forecast card */
 .hourly-card {
-    min-width: 60px;  /* Prevent flex from shrinking */
+    min-width: 60px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
 }
-
 .hourly-time { font-size: 0.85rem; color: rgba(255, 255, 255, 0.8); }
 .hourly-card i { font-size: 1.4rem; }
 .hourly-temp { font-weight: 500; font-size: 1rem; }
 
-/* Daily forecast list (vertical layout) */
+/* DAILY LIST */
 .daily-container { display: flex; flex-direction: column; }
 .daily-row {
     display: flex; justify-content: space-between; align-items: center;
@@ -453,58 +383,50 @@ body {
 .daily-condition i { font-size: 1.2rem; width: 25px; text-align: center; }
 .daily-condition span { font-size: 0.9rem; color: rgba(255, 255, 255, 0.8); }
 .daily-temps { font-weight: 500; font-size: 1rem; }
-.min-temp { color: rgba(255, 255, 255, 0.5); }  /* Dimmer for min temp */
+.min-temp { color: rgba(255, 255, 255, 0.5); }
 
-/* ========================================================= */
-/* LOGICAL STATES */
-/* Loading spinner and error message visibility */
-/* ========================================================= */
+/* --- LOGICAL STATES --- */
 .loading {
-    /* Hidden by default, shown with display: block via JS */
     display: none; margin-top: 30px; font-size: 1.1rem;
     font-weight: 400; color: rgba(255,255,255,0.7);
 }
 
 .error {
-    /* Hidden by default, shown with display: block via JS */
     display: none; margin-top: 20px; font-size: 0.95rem;
-    background-color: rgba(239, 68, 68, 0.2);  /* Red background */
+    background-color: rgba(239, 68, 68, 0.2);
     border: 1px solid rgba(239, 68, 68, 0.4);
-    color: #fca5a5;  /* Light red text */
-    padding: 12px; border-radius: 12px;
+    color: #fca5a5; padding: 12px; border-radius: 12px;
 }
 
 /* ========================================================= */
-/* MOBILE RESPONSIVE DESIGN */
-/* Optimizations for screens smaller than 500px */
+/* --- OPTIMIZED MOBILE VIEW (MEDIA QUERIES) --- */
 /* ========================================================= */
 @media (max-width: 500px) {
     body {
-        padding: 0;  /* Remove side padding on mobile */
-        overflow-x: hidden;  /* Prevent horizontal scroll */
+        padding: 0; 
+        overflow-x: hidden; 
     }
 
     .weather-container {
-        border-radius: 0;  /* Full-width on mobile */
-        border: none;  /* No border on edge-to-edge design */
+        border-radius: 0;
+        border: none; 
         min-height: 100vh;
-        box-shadow: none;  /* Remove glow on mobile */
-        animation: none;  /* Disable breathing animation to prevent layout shift */
+        box-shadow: none; 
+        animation: none; 
     }
     
     .weather-fx {
-        border-radius: 0;  /* Match container corners */
+        border-radius: 0;
     }
 
     .content-layer {
-        padding: 30px 20px;  /* Reduce padding on mobile */
+        padding: 30px 20px;
     }
 
-    /* Scale down typography on mobile */
     #city-name { font-size: 1.8rem; }
     #temperature { font-size: 5rem; }
 
-    /* Change metrics grid to 2 columns on mobile */
+    .current-metrics {
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
         padding: 20px 15px;
@@ -515,17 +437,16 @@ body {
     .metric-card i { font-size: 1.4rem; }
     .metric-value { font-size: 1.1rem; }
 
-    /* Stack solar metrics vertically on mobile */
     .solar-metrics {
-        grid-template-columns: 1fr;  /* Single column on mobile */
+        grid-template-columns: 1fr;
         gap: 15px;
         padding: 20px;
     }
 
     .solar-card {
-        justify-content: center;  /* Center alignment */
+        justify-content: center; 
         text-align: center;
     }
 
-    .daily-day { width: 55px; }  /* Adjusted width for mobile layout */
+    .daily-day { width: 55px; }
 }
