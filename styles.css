@@ -1,8 +1,10 @@
+/* --- ДИНАМИЧНИ ПРОМЕНЛИВИ ЗА ЖИВИЯ ИНТЕРФЕЙС --- */
 :root {
     --wind-pulse: 5s; 
     --aura-color: rgba(255, 255, 255, 0.1); 
 }
 
+/* --- BASE RESET & PREMIUM TYPOGRAPHY --- */
 * {
     margin: 0;
     padding: 0;
@@ -21,6 +23,7 @@ body {
     overflow-x: hidden;
 }
 
+/* --- GLASSMORPHISM & LIVING CONTAINER --- */
 .weather-container {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(25px);
@@ -40,6 +43,7 @@ body {
     50% { transform: scale(1.01); }
 }
 
+/* --- WEATHER FX ENGINE --- */
 .weather-fx {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -56,6 +60,7 @@ body {
     text-align: center;
 }
 
+/* Effects animations */
 .raindrop {
     position: absolute;
     width: 2px;
@@ -63,7 +68,6 @@ body {
     background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.6));
     animation: rainFall linear infinite;
 }
-
 @keyframes rainFall {
     0% { transform: translateY(-20px); opacity: 1; }
     100% { transform: translateY(800px); opacity: 0; }
@@ -78,7 +82,6 @@ body {
     box-shadow: 0 0 5px rgba(255,255,255,0.8);
     animation: snowFall linear infinite;
 }
-
 @keyframes snowFall {
     0% { transform: translateY(-20px) translateX(0); opacity: 1; }
     50% { transform: translateY(400px) translateX(20px); }
@@ -94,12 +97,12 @@ body {
     box-shadow: 0 0 8px #fff;
     animation: twinkle ease-in-out infinite;
 }
-
 @keyframes twinkle {
     0%, 100% { opacity: 0.2; transform: scale(0.8); }
     50% { opacity: 1; transform: scale(1.2); }
 }
 
+/* --- SEARCH BOX --- */
 .search-box {
     display: flex;
     justify-content: space-between;
@@ -150,6 +153,7 @@ body {
     background: rgba(255, 255, 255, 0.25);
 }
 
+/* --- HISTORY --- */
 .history-container {
     display: flex;
     flex-wrap: wrap;
@@ -174,6 +178,7 @@ body {
     color: #ffffff;
 }
 
+/* --- MAIN WEATHER DISPLAY --- */
 #city-name {
     font-size: 2.2rem;
     font-weight: 500;
@@ -235,6 +240,7 @@ body {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* --- METRICS DASHBOARD --- */
 .current-metrics {
     display: grid;
     grid-template-columns: repeat(4, 1fr); 
@@ -309,6 +315,7 @@ body {
     font-weight: 600;
 }
 
+/* --- FORECAST SECTIONS --- */
 .forecast-section {
     text-align: left;
     background: rgba(0, 0, 0, 0.15);
@@ -335,16 +342,14 @@ body {
     padding-top: 20px;
 }
 
+/* HOURLY SCROLL */
 .hourly-container {
     display: flex;
     overflow-x: auto; 
     gap: 15px;
     padding-bottom: 10px;
 }
-
-.hourly-container::-webkit-scrollbar {
-    height: 4px;
-}
+.hourly-container::-webkit-scrollbar { height: 4px; }
 .hourly-container::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 10px;
@@ -358,105 +363,88 @@ body {
     align-items: center;
     gap: 12px;
 }
+.hourly-time { font-size: 0.85rem; color: rgba(255, 255, 255, 0.8); }
+.hourly-card i { font-size: 1.4rem; }
+.hourly-temp { font-weight: 500; font-size: 1rem; }
 
-.hourly-time {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.hourly-card i {
-    font-size: 1.4rem;
-}
-
-.hourly-temp {
-    font-weight: 500;
-    font-size: 1rem;
-}
-
-.daily-container {
-    display: flex;
-    flex-direction: column;
-}
-
+/* DAILY LIST */
+.daily-container { display: flex; flex-direction: column; }
 .daily-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-
-.daily-row:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.daily-day {
-    width: 45px;
-    font-weight: 500;
-    font-size: 1rem;
-}
-
+.daily-row:last-child { border-bottom: none; padding-bottom: 0; }
+.daily-day { width: 45px; font-weight: 500; font-size: 1rem; }
 .daily-condition {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-left: 15px;
+    flex: 1; display: flex; align-items: center; gap: 15px; margin-left: 15px;
 }
+.daily-condition i { font-size: 1.2rem; width: 25px; text-align: center; }
+.daily-condition span { font-size: 0.9rem; color: rgba(255, 255, 255, 0.8); }
+.daily-temps { font-weight: 500; font-size: 1rem; }
+.min-temp { color: rgba(255, 255, 255, 0.5); }
 
-.daily-condition i {
-    font-size: 1.2rem;
-    width: 25px; 
-    text-align: center;
-}
-
-.daily-condition span {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.daily-temps {
-    font-weight: 500;
-    font-size: 1rem;
-}
-
-.min-temp {
-    color: rgba(255, 255, 255, 0.5); 
-}
-
+/* --- LOGICAL STATES --- */
 .loading {
-    display: none;
-    margin-top: 30px;
-    font-size: 1.1rem;
-    font-weight: 400;
-    color: rgba(255,255,255,0.7);
+    display: none; margin-top: 30px; font-size: 1.1rem;
+    font-weight: 400; color: rgba(255,255,255,0.7);
 }
 
 .error {
-    display: none;
-    margin-top: 20px;
-    font-size: 0.95rem;
+    display: none; margin-top: 20px; font-size: 0.95rem;
     background-color: rgba(239, 68, 68, 0.2);
     border: 1px solid rgba(239, 68, 68, 0.4);
-    color: #fca5a5;
-    padding: 12px;
-    border-radius: 12px;
+    color: #fca5a5; padding: 12px; border-radius: 12px;
 }
 
-@media (max-width: 480px) {
+/* ========================================================= */
+/* --- OPTIMIZED MOBILE VIEW (MEDIA QUERIES) --- */
+/* ========================================================= */
+@media (max-width: 500px) {
+    body {
+        padding: 0; 
+        overflow-x: hidden; /* Предотвратява хоризонтален скрол */
+    }
+
     .weather-container {
-        padding: 0;
         border-radius: 0;
+        border: none; 
         min-height: 100vh;
+        box-shadow: none; 
+        animation: none; /* ТУК СПИРАМЕ МАЩАБИРАНЕТО НА ТЕЛЕФОН ЗА ДА НЯМА ПРЕМИГВАНЕ */
     }
+    
+    .weather-fx {
+        border-radius: 0;
+    }
+
     .content-layer {
-        padding: 40px 20px;
+        padding: 30px 20px;
     }
-    #temperature {
-        font-size: 4.5rem;
+
+    #city-name { font-size: 1.8rem; }
+    #temperature { font-size: 5rem; }
+
+    .current-metrics {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 20px 15px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
     }
+
+    .metric-card i { font-size: 1.4rem; }
+    .metric-value { font-size: 1.1rem; }
+
     .solar-metrics {
         grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 20px;
     }
+
+    .solar-card {
+        justify-content: center; 
+        text-align: center;
+    }
+
+    .daily-day { width: 55px; }
 }
