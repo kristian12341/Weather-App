@@ -9,7 +9,6 @@ A modern, high-performance web application that delivers real-time weather forec
 ## 📸 Preview
 
 ![Weather App Preview](screenshot.png)
-*(Note: Replace this image with an actual screenshot of the app)*
 
 ## ✨ Key Features
 
