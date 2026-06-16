@@ -1,10 +1,8 @@
-/* --- ДИНАМИЧНИ ПРОМЕНЛИВИ ЗА ЖИВИЯ ИНТЕРФЕЙС --- */
 :root {
     --wind-pulse: 5s; 
     --aura-color: rgba(255, 255, 255, 0.1); 
 }
 
-/* --- BASE RESET & PREMIUM TYPOGRAPHY --- */
 * {
     margin: 0;
     padding: 0;
@@ -23,7 +21,6 @@ body {
     overflow-x: hidden;
 }
 
-/* --- GLASSMORPHISM & LIVING CONTAINER --- */
 .weather-container {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(25px);
@@ -43,11 +40,10 @@ body {
     50% { transform: scale(1.01); }
 }
 
-/* --- WEATHER FX ENGINE (НОВО) --- */
 .weather-fx {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    pointer-events: none; /* За да можеш да кликаш през него */
+    pointer-events: none; 
     z-index: 0;
     border-radius: 35px;
     overflow: hidden;
@@ -60,7 +56,6 @@ body {
     text-align: center;
 }
 
-/* Капки дъжд */
 .raindrop {
     position: absolute;
     width: 2px;
@@ -74,7 +69,6 @@ body {
     100% { transform: translateY(800px); opacity: 0; }
 }
 
-/* Снежинки */
 .snowflake {
     position: absolute;
     width: 6px;
@@ -91,7 +85,6 @@ body {
     100% { transform: translateY(800px) translateX(-20px); opacity: 0; }
 }
 
-/* Звезди */
 .star {
     position: absolute;
     width: 3px;
@@ -107,7 +100,6 @@ body {
     50% { opacity: 1; transform: scale(1.2); }
 }
 
-/* --- SEARCH BOX --- */
 .search-box {
     display: flex;
     justify-content: space-between;
@@ -158,7 +150,6 @@ body {
     background: rgba(255, 255, 255, 0.25);
 }
 
-/* --- HISTORY --- */
 .history-container {
     display: flex;
     flex-wrap: wrap;
@@ -183,7 +174,6 @@ body {
     color: #ffffff;
 }
 
-/* --- MAIN WEATHER DISPLAY --- */
 #city-name {
     font-size: 2.2rem;
     font-weight: 500;
@@ -219,7 +209,6 @@ body {
     margin-left: -10px; 
 }
 
-/* --- PRECISE TOGGLE BUTTON --- */
 .toggle-container {
     display: flex;
     justify-content: center;
@@ -246,7 +235,6 @@ body {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* --- PROFESSIONAL METRICS DASHBOARD --- */
 .current-metrics {
     display: grid;
     grid-template-columns: repeat(4, 1fr); 
@@ -284,7 +272,6 @@ body {
     font-weight: 500;
 }
 
-/* --- SOLAR METRICS (НОВО) --- */
 .solar-metrics {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -322,7 +309,6 @@ body {
     font-weight: 600;
 }
 
-/* --- FORECAST SECTIONS --- */
 .forecast-section {
     text-align: left;
     background: rgba(0, 0, 0, 0.15);
@@ -349,7 +335,6 @@ body {
     padding-top: 20px;
 }
 
-/* HOURLY SCROLL */
 .hourly-container {
     display: flex;
     overflow-x: auto; 
@@ -388,7 +373,6 @@ body {
     font-size: 1rem;
 }
 
-/* DAILY LIST */
 .daily-container {
     display: flex;
     flex-direction: column;
@@ -441,7 +425,6 @@ body {
     color: rgba(255, 255, 255, 0.5); 
 }
 
-/* --- LOGICAL STATES --- */
 .loading {
     display: none;
     margin-top: 30px;
