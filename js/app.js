@@ -1,7 +1,6 @@
 import { fetchWeather, fetchWeatherByCoords } from './api.js';
 import { displayWeather, updateTemperatureDisplay, showLoading, hideLoading, showError, renderHistoryTags } from './ui.js';
 
-// Стъпка 3.3 - Организираме и тези елементи
 const DOM = {
     searchForm: document.getElementById("search-form"),
     cityInput: document.getElementById("city-input"),
@@ -10,8 +9,10 @@ const DOM = {
 
 let isCelsius = true;
 
-// --- History Logic ---
-
+/**
+ * Извлича историята на търсенията от локалната памет на браузъра.
+ * * @returns {Array<string>} Масив с имена на градове или празен масив
+ */
 function getHistory() {
     let saved = localStorage.getItem("searchHistory");
     try {
@@ -21,6 +22,10 @@ function getHistory() {
     }
 }
 
+/**
+ * Запазва ново търсене в историята, поддържайки максимум 5 уникални записа.
+ * * @param {string} newCity - Името на търсения град
+ */
 function saveToHistory(newCity) {
     let history = getHistory();
     history = history.filter(function(city) { return city !== newCity; });
@@ -30,6 +35,9 @@ function saveToHistory(newCity) {
     updateHistoryUI();
 }
 
+/**
+ * Извиква функция от UI модула, за да рендира актуалните тагове от историята.
+ */
 function updateHistoryUI() {
     renderHistoryTags(getHistory(), function(clickedCity) {
         DOM.cityInput.value = clickedCity;
@@ -37,8 +45,10 @@ function updateHistoryUI() {
     });
 }
 
-// --- App Logic ---
-
+/**
+ * Обработва търсене на град: показва лоудинг екран, извиква API-то и рендира данните.
+ * * @param {string} city - Име на град за търсене
+ */
 async function handleCitySearch(city) {
     showLoading();
     try {
@@ -52,6 +62,9 @@ async function handleCitySearch(city) {
     }
 }
 
+/**
+ * Опитва да достъпи GPS локацията на устройството и извиква API заявка с координатите.
+ */
 function loadWeatherByLocation() {
     if (!navigator.geolocation) {
         showError("Geolocation is not supported by your browser.");

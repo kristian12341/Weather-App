@@ -1,6 +1,5 @@
 import { getWeatherDescription, getWeatherIcon, getIconStyle, getAuraColor } from './weather-codes.js';
 
-// Стъпка 3.3 - Групиране на всички DOM елементи в един обект
 export const DOM = {
     cityName: document.getElementById("city-name"),
     temperature: document.getElementById("temperature"),
@@ -28,10 +27,20 @@ let currentWeatherData = null;
 let dailyForecastData = null; 
 let hourlyForecastData = null;
 
+/**
+ * Конвертира градуси по Целзий във Фаренхайт.
+ * * @param {number} celsius - Температура в градуси по Целзий
+ * @returns {number} Температура в градуси по Фаренхайт
+ */
 function toFahrenheit(celsius) {
     return (celsius * 9) / 5 + 32;
 }
 
+/**
+ * Форматира ISO дата в четим час (напр. "06:45").
+ * * @param {string} isoString - Дата и час в ISO формат
+ * @returns {string} Форматиран час и минути
+ */
 function formatTime(isoString) {
     let date = new Date(isoString);
     let hours = date.getHours();
@@ -41,6 +50,11 @@ function formatTime(isoString) {
     return hours + ":" + mins;
 }
 
+/**
+ * Генерира и визуализира метеорологични ефекти (дъжд, сняг, звезди) в UI.
+ * * @param {number} code - WMO метеорологичен код
+ * @param {number} isDay - 1 за ден, 0 за нощ
+ */
 function updateWeatherFX(code, isDay) {
     DOM.weatherFx.innerHTML = ""; 
     
@@ -69,6 +83,14 @@ function updateWeatherFX(code, isDay) {
     }
 }
 
+/**
+ * Обновява "Живия интерфейс" - пулсации, светеща аура и тайтъла на браузъра.
+ * * @param {number} temp - Текуща температура
+ * @param {number} wind - Текуща скорост на вятъра
+ * @param {number} code - WMO код за състоянието на времето
+ * @param {string} cityNameText - Име на града
+ * @param {number} isDay - 1 за ден, 0 за нощ
+ */
 function updateLivingInterface(temp, wind, code, cityNameText, isDay) {
     let pulseSeconds = Math.max(1.5, 8 - (wind / 5));
     document.documentElement.style.setProperty('--wind-pulse', pulseSeconds + 's');
@@ -77,6 +99,10 @@ function updateLivingInterface(temp, wind, code, cityNameText, isDay) {
     updateWeatherFX(code, isDay);
 }
 
+/**
+ * Обновява визуализацията на всички температури на екрана (°C или °F).
+ * * @param {boolean} isCelsius - Показва дали системата е в режим Целзий
+ */
 export function updateTemperatureDisplay(isCelsius) {
     if (lastTempC === null) return; 
 
@@ -93,6 +119,12 @@ export function updateTemperatureDisplay(isCelsius) {
     }
 }
 
+/**
+ * Показва всички данни за времето в DOM структурата на приложението.
+ * * @param {object} data - Обект с отговора от Open-Meteo API
+ * @param {string} name - Форматирано име на града
+ * @param {boolean} isCelsius - Флаг за мерната единица на температурата
+ */
 export function displayWeather(data, name, isCelsius) {
     DOM.error.style.display = "none"; 
     DOM.weatherInfo.style.display = "block"; 
@@ -127,6 +159,10 @@ export function displayWeather(data, name, isCelsius) {
     DOM.weatherIcon.setAttribute("style", getIconStyle(code));
 }
 
+/**
+ * Рендира почасовата и дневната прогноза в DOM.
+ * * @param {boolean} isCelsius - Показва дали температурите да се рендират в Целзий
+ */
 function renderForecasts(isCelsius) {
     DOM.hourlyContainer.innerHTML = ""; 
     
@@ -190,6 +226,11 @@ function renderForecasts(isCelsius) {
     }
 }
 
+/**
+ * Рендира бутоните за история на търсенията.
+ * * @param {Array<string>} citiesArray - Масив с имената на последните търсени градове
+ * @param {Function} clickCallback - Функция, която се изпълнява при клик на таг
+ */
 export function renderHistoryTags(citiesArray, clickCallback) {
     DOM.historyContainer.innerHTML = ""; 
     citiesArray.forEach(function(city) {
@@ -203,16 +244,26 @@ export function renderHistoryTags(citiesArray, clickCallback) {
     });
 }
 
+/**
+ * Показва лоудинг анимация и скрива останалото съдържание.
+ */
 export function showLoading() {
     DOM.weatherInfo.style.display = "none";
     DOM.error.style.display = "none";
     DOM.loading.style.display = "block";
 }
 
+/**
+ * Скрива лоудинг анимацията.
+ */
 export function hideLoading() {
     DOM.loading.style.display = "none";
 }
 
+/**
+ * Показва червено каре със съобщение за грешка.
+ * * @param {string} message - Текстът на грешката, която трябва да се покаже
+ */
 export function showError(message) {
     DOM.weatherInfo.style.display = "none";
     DOM.loading.style.display = "none";

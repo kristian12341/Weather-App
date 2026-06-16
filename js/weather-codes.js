@@ -29,10 +29,20 @@ export const weatherConditions = {
     99: 'Heavy thunderstorm'
 };
 
+/**
+ * Превежда WMO метеорологичен код до текстов формат на английски език.
+ * * @param {number} code - WMO метеорологичен код (напр. 0, 3, 61)
+ * @returns {string} Текстово описание на състоянието (напр. "Clear sky")
+ */
 export function getWeatherDescription(code) {
     return weatherConditions[code] || "Unknown Condition";
 }
 
+/**
+ * Съпоставя WMO метеорологичен код с Font Awesome CSS клас за иконка.
+ * * @param {number} weathercode - WMO метеорологичен код
+ * @returns {string} CSS клас за иконката (напр. "fa-sun")
+ */
 export function getWeatherIcon(weathercode) {
     const iconMap = {
         0: 'fa-sun', 1: 'fa-cloud-sun', 2: 'fa-cloud-sun', 3: 'fa-cloud', 
@@ -47,6 +57,11 @@ export function getWeatherIcon(weathercode) {
     return iconMap[weathercode] || 'fa-question';
 }
 
+/**
+ * Връща CSS inline стил за преливка (градиент) базиран на състоянието на времето.
+ * * @param {number} weatherCode - WMO метеорологичен код
+ * @returns {string} CSS стринг с дефиниран linear-gradient за текста (иконата)
+ */
 export function getIconStyle(weatherCode) {
     let gradient = "";
     if (weatherCode === 0) gradient = "linear-gradient(135deg, #FDB813, #FF8C00)";
@@ -60,6 +75,11 @@ export function getIconStyle(weatherCode) {
     return `background: ${gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;`;
 }
 
+/**
+ * Връща rgba цвят за външната аура (box-shadow) на основния контейнер.
+ * * @param {number} weatherCode - WMO метеорологичен код
+ * @returns {string} RGBA цветови код
+ */
 export function getAuraColor(weatherCode) {
     if (weatherCode === 0) return "rgba(253, 184, 19, 0.35)"; 
     if (weatherCode >= 1 && weatherCode <= 3) return "rgba(255, 255, 255, 0.15)"; 
