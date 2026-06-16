@@ -1,5 +1,8 @@
+// Import functions to get weather descriptions, icons, and styling based on WMO weather codes
 import { getWeatherDescription, getWeatherIcon, getIconStyle, getAuraColor } from './weather-codes.js';
 
+// Cache frequently accessed DOM elements for better performance
+// This prevents repeated document.getElementById() calls throughout the code
 export const DOM = {
     cityName: document.getElementById("city-name"),
     temperature: document.getElementById("temperature"),
@@ -21,55 +24,72 @@ export const DOM = {
     weatherFx: document.getElementById("weather-fx")
 };
 
+// Store the current temperature values in Celsius for conversion when switching units
 let lastTempC = null; 
 let lastFeelsLikeC = null; 
+// Store API response data for use across multiple rendering functions
 let currentWeatherData = null;
 let dailyForecastData = null; 
 let hourlyForecastData = null;
 
 /**
- * Конвертира градуси по Целзий във Фаренхайт.
- * * @param {number} celsius - Температура в градуси по Целзий
- * @returns {number} Температура в градуси по Фаренхайт
+ * Converts temperature from Celsius to Fahrenheit.
+ * Formula: (°C × 9/5) + 32
+ *
+ * @param {number} celsius - Temperature in degrees Celsius
+ * @returns {number} Temperature in degrees Fahrenheit
  */
 function toFahrenheit(celsius) {
+    // Apply the standard Celsius to Fahrenheit conversion formula
     return (celsius * 9) / 5 + 32;
 }
 
 /**
- * Форматира ISO дата в четим час (напр. "06:45").
- * * @param {string} isoString - Дата и час в ISO формат
- * @returns {string} Форматиран час и минути
+ * Formats an ISO 8601 datetime string into a readable time format (HH:MM).
+ * Example: "2024-01-15T14:30:00" becomes "14:30"
+ *
+ * @param {string} isoString - Full ISO datetime string
+ * @returns {string} Formatted time as "HH:MM"
  */
 function formatTime(isoString) {
+    // Parse the ISO string into a Date object
     let date = new Date(isoString);
     let hours = date.getHours();
     let mins = date.getMinutes();
+    // Pad hours and minutes with leading zero if needed
     if (hours < 10) hours = "0" + hours;
     if (mins < 10) mins = "0" + mins;
     return hours + ":" + mins;
 }
 
 /**
- * Генерира и визуализира метеорологични ефекти (дъжд, сняг, звезди) в UI.
- * * @param {number} code - WMO метеорологичен код
- * @param {number} isDay - 1 за ден, 0 за нощ
+ * Creates and animates weather effects (rain, snow, or stars) in the background.
+ * Dynamically generates DOM elements and positions them across the viewport.
+ * Effects are animated to fall/twinkle based on weather conditions.
+ *
+ * @param {number} code - WMO weather code that determines the type of effect
+ * @param {number} isDay - 1 for daytime, 0 for nighttime (affects which effects are shown)
  */
 function updateWeatherFX(code, isDay) {
+    // Clear any previous effects from the container
     DOM.weatherFx.innerHTML = ""; 
     
-    let count = 0;
-    let type = "";
+    let count = 0;  // Number of particles to generate
+    let type = "";  // Type of particle (raindrop, snowflake, star)
 
-    if (code >= 51 && code <= 67) { count = 35; type = "raindrop"; }
-    else if (code >= 71 && code <= 86) { count = 35; type = "snowflake"; }
-    else if (code === 0 && isDay === 0) { count = 25; type = "star"; }
+    // Determine which effect to display based on WMO code ranges
+    if (code >= 51 && code <= 67) { count = 35; type = "raindrop"; }      // Drizzle and rain
+    else if (code >= 71 && code <= 86) { count = 35; type = "snowflake"; }  // Snow
+    else if (code === 0 && isDay === 0) { count = 25; type = "star"; }      // Clear night sky
 
+    // Create and position each particle element
     for(let i = 0; i < count; i++) {
         let el = document.createElement("div");
         el.className = type;
+        // Randomly position horizontally across the viewport
         el.style.left = (Math.random() * 100) + "%";
         
+        // Apply different animation timing for stars vs precipitation
         if (type === "star") {
             el.style.top = (Math.random() * 50) + "%";
             el.style.animationDuration = (Math.random() * 2 + 1) + "s";
@@ -84,76 +104,104 @@ function updateWeatherFX(code, isDay) {
 }
 
 /**
- * Обновява "Живия интерфейс" - пулсации, светеща аура и тайтъла на браузъра.
- * * @param {number} temp - Текуща температура
- * @param {number} wind - Текуща скорост на вятъра
- * @param {number} code - WMO код за състоянието на времето
- * @param {string} cityNameText - Име на града
- * @param {number} isDay - 1 за ден, 0 за нощ
+ * Updates the "living interface" - applies dynamic visual effects based on weather conditions.
+ * This includes breathing animation speed based on wind, color aura matching weather type,
+ * page title display, and weather particle effects.
+ *
+ * @param {number} temp - Current temperature in Celsius
+ * @param {number} wind - Current wind speed in km/h
+ * @param {number} code - WMO weather code
+ * @param {string} cityNameText - Name of the city to display in browser title
+ * @param {number} isDay - 1 for daytime, 0 for nighttime
  */
 function updateLivingInterface(temp, wind, code, cityNameText, isDay) {
+    // Calculate pulse animation speed based on wind (faster wind = faster pulse)
     let pulseSeconds = Math.max(1.5, 8 - (wind / 5));
+    // Update CSS variables to control animation and color effects
     document.documentElement.style.setProperty('--wind-pulse', pulseSeconds + 's');
     document.documentElement.style.setProperty('--aura-color', getAuraColor(code));
+    // Update browser title bar to show current temperature and location
     document.title = Math.round(temp) + "°C | " + cityNameText;
+    // Render weather particle effects
     updateWeatherFX(code, isDay);
 }
 
 /**
- * Обновява визуализацията на всички температури на екрана (°C или °F).
- * * @param {boolean} isCelsius - Показва дали системата е в режим Целзий
+ * Updates all temperature displays on the page (current and forecast temperatures).
+ * Converts from Celsius to Fahrenheit or vice versa, and re-renders all forecasts.
+ *
+ * @param {boolean} isCelsius - True to display in Celsius, false for Fahrenheit
  */
 export function updateTemperatureDisplay(isCelsius) {
+    // Skip if we don't have temperature data yet
     if (lastTempC === null) return; 
 
+    // Update the main temperature display and feels-like temperature
     if (isCelsius) {
         DOM.temperature.textContent = lastTempC + "°";
         DOM.feelsLikeEl.textContent = lastFeelsLikeC + "°";
     } else {
+        // Convert to Fahrenheit and round to nearest degree
         DOM.temperature.textContent = Math.round(toFahrenheit(lastTempC)) + "°";
         DOM.feelsLikeEl.textContent = Math.round(toFahrenheit(lastFeelsLikeC)) + "°";
     }
 
+    // Re-render hourly and daily forecasts with the new temperature unit
     if (dailyForecastData !== null && hourlyForecastData !== null) {
         renderForecasts(isCelsius);
     }
 }
 
 /**
- * Показва всички данни за времето в DOM структурата на приложението.
- * * @param {object} data - Обект с отговора от Open-Meteo API
- * @param {string} name - Форматирано име на града
- * @param {boolean} isCelsius - Флаг за мерната единица на температурата
+ * Main function to display all weather information on the page.
+ * This is called after fetching weather data and handles rendering of:
+ * - Current conditions (temperature, weather description, icon)
+ * - Detailed metrics (humidity, wind, precipitation, UV index, sunrise/sunset)
+ * - Dynamic UI effects (color auras, breathing animations, particle effects)
+ *
+ * @param {object} data - Complete weather data object from Open-Meteo API
+ * @param {string} name - City or location name to display
+ * @param {boolean} isCelsius - Temperature unit preference
  */
 export function displayWeather(data, name, isCelsius) {
+    // Hide error messages and show the weather info container
     DOM.error.style.display = "none"; 
     DOM.weatherInfo.style.display = "block"; 
     
+    // Store the API response data globally for use in other functions
     currentWeatherData = data.current; 
     dailyForecastData = data.daily;
     hourlyForecastData = data.hourly;
     
+    // Display the city/location name
     DOM.cityName.textContent = name;
     
+    // Display detailed metrics from current weather data
     DOM.humidityEl.textContent = currentWeatherData.relative_humidity_2m + "%";
     DOM.precipitationEl.textContent = currentWeatherData.precipitation + " mm";
     let currentWind = currentWeatherData.wind_speed_10m;
     DOM.windSpeedEl.textContent = currentWind + " km/h";
 
+    // Display solar metrics from daily forecast
     DOM.uvIndexEl.textContent = dailyForecastData.uv_index_max[0];
     DOM.sunriseEl.textContent = formatTime(dailyForecastData.sunrise[0]);
     DOM.sunsetEl.textContent = formatTime(dailyForecastData.sunset[0]);
 
+    // Store current temperatures for unit conversion later
     lastTempC = Math.round(currentWeatherData.temperature_2m);
     lastFeelsLikeC = Math.round(currentWeatherData.apparent_temperature);
     
+    // Update all temperature displays in the current unit
     updateTemperatureDisplay(isCelsius); 
 
+    // Get weather code and day/night flag for visual styling
     let code = currentWeatherData.weather_code;
     let isDay = currentWeatherData.is_day;
     
+    // Apply dynamic visual effects based on weather conditions
     updateLivingInterface(lastTempC, currentWind, code, name, isDay);
 
+    // Update weather description and icon
     DOM.weatherCondition.textContent = getWeatherDescription(code);
     DOM.weatherIcon.className = "fas " + getWeatherIcon(code);
     DOM.weatherIcon.setAttribute("style", getIconStyle(code));
@@ -227,16 +275,21 @@ function renderForecasts(isCelsius) {
 }
 
 /**
- * Рендира бутоните за история на търсенията.
- * * @param {Array<string>} citiesArray - Масив с имената на последните търсени градове
- * @param {Function} clickCallback - Функция, която се изпълнява при клик на таг
+ * Renders clickable history tags for previously searched cities.
+ * Users can click a tag to quickly search for that city again.
+ *
+ * @param {Array<string>} citiesArray - Array of city names to display as tags
+ * @param {Function} clickCallback - Callback function executed when a tag is clicked, receives the city name
  */
 export function renderHistoryTags(citiesArray, clickCallback) {
+    // Clear previous history tags
     DOM.historyContainer.innerHTML = ""; 
+    // Create a button for each city in the array
     citiesArray.forEach(function(city) {
         let btn = document.createElement("button");
         btn.className = "history-tag";
         btn.textContent = city;
+        // Attach click handler to trigger search for this city
         btn.addEventListener("click", function() {
             clickCallback(city);
         });

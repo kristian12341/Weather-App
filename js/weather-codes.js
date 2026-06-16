@@ -1,3 +1,6 @@
+// Mapping of WMO Weather Codes to human-readable descriptions
+// WMO codes are standardized international weather condition codes (0-99)
+// See: https://www.weatherapi.com/docs/weather_codes.asp
 export const weatherConditions = {
     0: 'Clear sky',
     1: 'Mainly clear',
@@ -30,20 +33,27 @@ export const weatherConditions = {
 };
 
 /**
- * Превежда WMO метеорологичен код до текстов формат на английски език.
- * * @param {number} code - WMO метеорологичен код (напр. 0, 3, 61)
- * @returns {string} Текстово описание на състоянието (напр. "Clear sky")
+ * Converts a WMO weather code to a human-readable English description.
+ * For example: code 0 = "Clear sky", code 61 = "Slight rain"
+ *
+ * @param {number} code - WMO weather code (0-99)
+ * @returns {string} Description of the weather condition
  */
 export function getWeatherDescription(code) {
+    // Return the matching description, or a generic fallback if code is unknown
     return weatherConditions[code] || "Unknown Condition";
 }
 
 /**
- * Съпоставя WMO метеорологичен код с Font Awesome CSS клас за иконка.
- * * @param {number} weathercode - WMO метеорологичен код
- * @returns {string} CSS клас за иконката (напр. "fa-sun")
+ * Maps a WMO weather code to a Font Awesome CSS icon class.
+ * Each weather condition gets a visually appropriate icon from the Font Awesome library.
+ * For example: code 0 = sun icon, code 61 = heavy rain icon
+ *
+ * @param {number} weathercode - WMO weather code
+ * @returns {string} Font Awesome CSS class name (e.g., "fa-sun", "fa-cloud-rain")
  */
 export function getWeatherIcon(weathercode) {
+    // Map each WMO code (or code range) to an appropriate Font Awesome icon
     const iconMap = {
         0: 'fa-sun', 1: 'fa-cloud-sun', 2: 'fa-cloud-sun', 3: 'fa-cloud', 
         45: 'fa-smog', 48: 'fa-smog', 51: 'fa-cloud-rain', 53: 'fa-cloud-rain', 
@@ -54,6 +64,7 @@ export function getWeatherIcon(weathercode) {
         80: 'fa-cloud-showers-heavy', 81: 'fa-cloud-showers-heavy', 82: 'fa-cloud-showers-heavy', 
         85: 'fa-snowflake', 86: 'fa-snowflake', 95: 'fa-bolt', 96: 'fa-bolt', 99: 'fa-bolt'
     };
+    // Return the matching icon class, or a generic question mark if code is unknown
     return iconMap[weathercode] || 'fa-question';
 }
 
@@ -76,14 +87,18 @@ export function getIconStyle(weatherCode) {
 }
 
 /**
- * Връща rgba цвят за външната аура (box-shadow) на основния контейнер.
- * * @param {number} weatherCode - WMO метеорологичен код
- * @returns {string} RGBA цветови код
+ * Determines the outer container's glow color (box-shadow aura) based on weather conditions.
+ * Creates an atmospheric effect that matches the current weather.
+ * For example: sunny = warm orange glow, rainy = cool blue glow
+ *
+ * @param {number} weatherCode - WMO weather code
+ * @returns {string} RGBA color value for the glow effect
  */
 export function getAuraColor(weatherCode) {
-    if (weatherCode === 0) return "rgba(253, 184, 19, 0.35)"; 
-    if (weatherCode >= 1 && weatherCode <= 3) return "rgba(255, 255, 255, 0.15)"; 
-    if (weatherCode >= 51 && weatherCode <= 67) return "rgba(2, 132, 199, 0.35)"; 
-    if (weatherCode >= 95) return "rgba(251, 191, 36, 0.3)"; 
-    return "rgba(255, 255, 255, 0.15)";
+    // Return RGBA color with transparency based on weather type
+    if (weatherCode === 0) return "rgba(253, 184, 19, 0.35)";      // Sunny: warm orange
+    if (weatherCode >= 1 && weatherCode <= 3) return "rgba(255, 255, 255, 0.15)"; // Cloudy: neutral white
+    if (weatherCode >= 51 && weatherCode <= 67) return "rgba(2, 132, 199, 0.35)"; // Rainy: cool blue
+    if (weatherCode >= 95) return "rgba(251, 191, 36, 0.3)";       // Thunderstorm: dark yellow
+    return "rgba(255, 255, 255, 0.15)"; // Default fallback: neutral
 }
