@@ -30,21 +30,81 @@ body {
     -webkit-backdrop-filter: blur(25px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 35px;
-    padding: 40px 30px;
     width: 100%;
     max-width: 480px;
-    text-align: center;
     position: relative;
-    /* Възстановяваме дишането и светещата аура */
     animation: breathe var(--wind-pulse) infinite ease-in-out;
     box-shadow: 0 0 50px var(--aura-color), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     transition: box-shadow 1.5s ease;
 }
 
-/* Анимацията за дишането */
 @keyframes breathe {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.015); }
+    50% { transform: scale(1.01); }
+}
+
+/* --- WEATHER FX ENGINE (НОВО) --- */
+.weather-fx {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none; /* За да можеш да кликаш през него */
+    z-index: 0;
+    border-radius: 35px;
+    overflow: hidden;
+}
+
+.content-layer {
+    position: relative;
+    z-index: 1;
+    padding: 40px 30px;
+    text-align: center;
+}
+
+/* Капки дъжд */
+.raindrop {
+    position: absolute;
+    width: 2px;
+    height: 15px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.6));
+    animation: rainFall linear infinite;
+}
+
+@keyframes rainFall {
+    0% { transform: translateY(-20px); opacity: 1; }
+    100% { transform: translateY(800px); opacity: 0; }
+}
+
+/* Снежинки */
+.snowflake {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(255,255,255,0.8);
+    animation: snowFall linear infinite;
+}
+
+@keyframes snowFall {
+    0% { transform: translateY(-20px) translateX(0); opacity: 1; }
+    50% { transform: translateY(400px) translateX(20px); }
+    100% { transform: translateY(800px) translateX(-20px); opacity: 0; }
+}
+
+/* Звезди */
+.star {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #fff;
+    animation: twinkle ease-in-out infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
 }
 
 /* --- SEARCH BOX --- */
@@ -191,7 +251,7 @@ body {
     display: grid;
     grid-template-columns: repeat(4, 1fr); 
     gap: 10px;
-    margin-bottom: 35px;
+    margin-bottom: 20px;
     padding-top: 25px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -222,6 +282,44 @@ body {
 .metric-value {
     font-size: 0.95rem;
     font-weight: 500;
+}
+
+/* --- SOLAR METRICS (НОВО) --- */
+.solar-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 35px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.solar-card {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    text-align: left;
+    padding: 5px;
+}
+
+.solar-card i {
+    font-size: 1.5rem;
+}
+
+.solar-title {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.solar-value {
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 /* --- FORECAST SECTIONS --- */
@@ -365,10 +463,17 @@ body {
 
 @media (max-width: 480px) {
     .weather-container {
-        padding: 30px 20px;
-        border-radius: 25px;
+        padding: 0;
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    .content-layer {
+        padding: 40px 20px;
     }
     #temperature {
         font-size: 4.5rem;
+    }
+    .solar-metrics {
+        grid-template-columns: 1fr;
     }
 }

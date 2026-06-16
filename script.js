@@ -20,6 +20,11 @@ let humidityEl = document.getElementById("humidity");
 let precipitationEl = document.getElementById("precipitation");
 let windSpeedEl = document.getElementById("wind-speed");
 
+// New Solar elements
+let uvIndexEl = document.getElementById("uv-index");
+let sunriseEl = document.getElementById("sunrise-time");
+let sunsetEl = document.getElementById("sunset-time");
+
 // State Variables
 let isCelsius = true;
 let lastTempC = null; 
@@ -66,9 +71,8 @@ function renderHistory() {
     });
 }
 
-// --- Dynamic Styling (Живият Интерфейс) ---
+// --- Dynamic Styling & FX Engine ---
 
-// Функция за преливките на иконите
 function getIconStyle(weatherCode) {
     let gradient = "";
     if (weatherCode === 0) {
@@ -90,27 +94,56 @@ function getIconStyle(weatherCode) {
     return `background: ${gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;`;
 }
 
-// Функция за цвета на аурата около кутията
 function getAuraColor(weatherCode) {
-    if (weatherCode === 0) return "rgba(253, 184, 19, 0.35)"; // Златно
-    if (weatherCode >= 1 && weatherCode <= 3) return "rgba(255, 255, 255, 0.15)"; // Бяло
-    if (weatherCode >= 51 && weatherCode <= 67) return "rgba(2, 132, 199, 0.35)"; // Синьо
-    if (weatherCode >= 95) return "rgba(251, 191, 36, 0.3)"; // Жълто-оранжево
+    if (weatherCode === 0) return "rgba(253, 184, 19, 0.35)"; 
+    if (weatherCode >= 1 && weatherCode <= 3) return "rgba(255, 255, 255, 0.15)"; 
+    if (weatherCode >= 51 && weatherCode <= 67) return "rgba(2, 132, 199, 0.35)"; 
+    if (weatherCode >= 95) return "rgba(251, 191, 36, 0.3)"; 
     return "rgba(255, 255, 255, 0.15)";
 }
 
-// Задвижва анимациите и светлините спрямо времето
-function updateLivingInterface(temp, wind, code, cityNameText) {
-    // Ускорява дишането на кутията спрямо вятъра
+// WEATHER FX ENGINE: Създава реални падащи капки, сняг или звезди!
+function updateWeatherFX(code, isDay) {
+    let fxContainer = document.getElementById("weather-fx");
+    fxContainer.innerHTML = ""; 
+    
+    let count = 0;
+    let type = "";
+
+    if (code >= 51 && code <= 67) { count = 35; type = "raindrop"; }
+    else if (code >= 71 && code <= 86) { count = 35; type = "snowflake"; }
+    else if (code === 0 && isDay === 0) { count = 25; type = "star"; }
+
+    for(let i = 0; i < count; i++) {
+        let el = document.createElement("div");
+        el.className = type;
+        el.style.left = (Math.random() * 100) + "%";
+        
+        // Randomize speed and delay for natural look
+        if (type === "star") {
+            el.style.top = (Math.random() * 50) + "%";
+            el.style.animationDuration = (Math.random() * 2 + 1) + "s";
+            el.style.animationDelay = (Math.random() * 2) + "s";
+        } else {
+            el.style.animationDuration = (Math.random() * 0.8 + 0.5) + "s";
+            el.style.animationDelay = (Math.random() * 1) + "s";
+        }
+        
+        fxContainer.appendChild(el);
+    }
+}
+
+function updateLivingInterface(temp, wind, code, cityNameText, isDay) {
     let pulseSeconds = Math.max(1.5, 8 - (wind / 5));
     document.documentElement.style.setProperty('--wind-pulse', pulseSeconds + 's');
 
-    // Сменя цвета на аурата
     let aura = getAuraColor(code);
     document.documentElement.style.setProperty('--aura-color', aura);
 
-    // Сменя таба в браузъра (пр. 22°C | Sofia)
     document.title = Math.round(temp) + "°C | " + cityNameText;
+    
+    // Активира ефектите
+    updateWeatherFX(code, isDay);
 }
 
 // --- Temperature Functions ---
@@ -163,8 +196,9 @@ async function getCityNameFromCoords(lat, lon) {
     }
 }
 
+// Добавено sunrise, sunset, uv_index_max към заявката
 function getApiUrl(lat, lon) {
-    return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+    return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,uv_index_max&timezone=auto`;
 }
 
 async function fetchWeatherByCoords(lat, lon) {
@@ -232,6 +266,16 @@ async function fetchWeather(city) {
     }
 }
 
+// Форматира датата от API-то в красив час (пр. 06:45)
+function formatTime(isoString) {
+    let date = new Date(isoString);
+    let hours = date.getHours();
+    let mins = date.getMinutes();
+    if (hours < 10) hours = "0" + hours;
+    if (mins < 10) mins = "0" + mins;
+    return hours + ":" + mins;
+}
+
 // --- UI Rendering ---
 
 function displayWeather(data, name) {
@@ -244,10 +288,16 @@ function displayWeather(data, name) {
     
     cityName.textContent = name;
     
+    // Basic Metrics
     humidityEl.textContent = currentWeatherData.relative_humidity_2m + "%";
     precipitationEl.textContent = currentWeatherData.precipitation + " mm";
     let currentWind = currentWeatherData.wind_speed_10m;
     windSpeedEl.textContent = currentWind + " km/h";
+
+    // Solar Metrics
+    uvIndexEl.textContent = dailyForecastData.uv_index_max[0];
+    sunriseEl.textContent = formatTime(dailyForecastData.sunrise[0]);
+    sunsetEl.textContent = formatTime(dailyForecastData.sunset[0]);
 
     lastTempC = Math.round(currentWeatherData.temperature_2m);
     lastFeelsLikeC = Math.round(currentWeatherData.apparent_temperature);
@@ -255,9 +305,9 @@ function displayWeather(data, name) {
     updateTemperatureDisplay(); 
 
     let code = currentWeatherData.weather_code;
+    let isDay = currentWeatherData.is_day;
     
-    // Включваме живия ефект!
-    updateLivingInterface(lastTempC, currentWind, code, name);
+    updateLivingInterface(lastTempC, currentWind, code, name, isDay);
 
     weatherCondition.textContent = getWeatherDescription(code);
     weatherIcon.className = "fas " + getWeatherIcon(code);
