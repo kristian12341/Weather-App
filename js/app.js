@@ -1,9 +1,12 @@
 import { fetchWeather, fetchWeatherByCoords } from './api.js';
 import { displayWeather, updateTemperatureDisplay, showLoading, hideLoading, showError, renderHistoryTags } from './ui.js';
 
-const searchForm = document.getElementById("search-form");
-const cityInput = document.getElementById("city-input");
-const toggleBtn = document.getElementById("toggle-temp-btn");
+// Стъпка 3.3 - Организираме и тези елементи
+const DOM = {
+    searchForm: document.getElementById("search-form"),
+    cityInput: document.getElementById("city-input"),
+    toggleBtn: document.getElementById("toggle-temp-btn")
+};
 
 let isCelsius = true;
 
@@ -27,10 +30,9 @@ function saveToHistory(newCity) {
     updateHistoryUI();
 }
 
-// Подаваме данните към UI модула заедно с функция, която да се извика при клик
 function updateHistoryUI() {
     renderHistoryTags(getHistory(), function(clickedCity) {
-        cityInput.value = clickedCity;
+        DOM.cityInput.value = clickedCity;
         handleCitySearch(clickedCity);
     });
 }
@@ -76,9 +78,9 @@ function loadWeatherByLocation() {
 
 // --- Event Listeners ---
 
-searchForm.addEventListener("submit", function(e) {
+DOM.searchForm.addEventListener("submit", function(e) {
     e.preventDefault(); 
-    let city = cityInput.value.trim();
+    let city = DOM.cityInput.value.trim();
     if (city !== "") {
         handleCitySearch(city);
     } else {
@@ -86,10 +88,10 @@ searchForm.addEventListener("submit", function(e) {
     }
 });
 
-toggleBtn.addEventListener("click", function() {
+DOM.toggleBtn.addEventListener("click", function() {
     isCelsius = !isCelsius; 
     updateTemperatureDisplay(isCelsius);
-    toggleBtn.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
+    DOM.toggleBtn.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
 });
 
 document.addEventListener("DOMContentLoaded", function() {

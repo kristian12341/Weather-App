@@ -1,3 +1,7 @@
+// Създаваме обект за кеша и настройваме времето на живот (10 минути)
+const cache = {};
+const CACHE_TTL = 10 * 60 * 1000;
+
 export async function getCityNameFromCoords(lat, lon) {
     let response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`);
     let data = await response.json();
@@ -20,6 +24,18 @@ export async function fetchWeatherByCoords(lat, lon) {
 }
 
 export async function fetchWeather(city) {
+    const cacheKey = city.toLowerCase();
+
+    // ПРОВЕРКА В КЕША (Стъпка 3.2)
+    if (cache[cacheKey]) {
+        const age = Date.now() - cache[cacheKey].timestamp;
+        if (age < CACHE_TTL) {
+            console.log("⚡ Връщам данни от кеша за:", city); // Можеш да го видиш в Console (F12)
+            return cache[cacheKey].data;
+        }
+    }
+
+    // Нормален Fetch, ако нямаме кеш
     let geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name=" + city + "&count=1&language=en";
     let geoResponse = await fetch(geoUrl);
     if (!geoResponse.ok) throw new Error("Failed to connect to location service.");
@@ -38,5 +54,14 @@ export async function fetchWeather(city) {
     if (!weatherResponse.ok) throw new Error("Failed to fetch weather data.");
 
     let weatherData = await weatherResponse.json();
-    return { data: weatherData, name: actualCityName };
+    
+    const finalResult = { data: weatherData, name: actualCityName };
+
+    // ЗАПАЗВАМЕ РЕЗУЛТАТА В КЕША (Стъпка 3.2)
+    cache[cacheKey] = {
+        data: finalResult,
+        timestamp: Date.now()
+    };
+
+    return finalResult;
 }

@@ -1,27 +1,27 @@
 import { getWeatherDescription, getWeatherIcon, getIconStyle, getAuraColor } from './weather-codes.js';
 
-const cityName = document.getElementById("city-name");
-const temperature = document.getElementById("temperature");
-const weatherCondition = document.getElementById("weather-condition");
-const weatherIcon = document.getElementById("weather-icon");
-const loading = document.getElementById("loading");
-const error = document.getElementById("error");
-const historyContainer = document.getElementById("search-history"); 
+// Стъпка 3.3 - Групиране на всички DOM елементи в един обект
+export const DOM = {
+    cityName: document.getElementById("city-name"),
+    temperature: document.getElementById("temperature"),
+    weatherCondition: document.getElementById("weather-condition"),
+    weatherIcon: document.getElementById("weather-icon"),
+    loading: document.getElementById("loading"),
+    error: document.getElementById("error"),
+    historyContainer: document.getElementById("search-history"),
+    hourlyContainer: document.getElementById("hourly-forecast"),
+    dailyContainer: document.getElementById("daily-forecast"),
+    feelsLikeEl: document.getElementById("feels-like"),
+    humidityEl: document.getElementById("humidity"),
+    precipitationEl: document.getElementById("precipitation"),
+    windSpeedEl: document.getElementById("wind-speed"),
+    uvIndexEl: document.getElementById("uv-index"),
+    sunriseEl: document.getElementById("sunrise-time"),
+    sunsetEl: document.getElementById("sunset-time"),
+    weatherInfo: document.getElementById("weather-info"),
+    weatherFx: document.getElementById("weather-fx")
+};
 
-const hourlyContainer = document.getElementById("hourly-forecast");
-const dailyContainer = document.getElementById("daily-forecast"); 
-
-const feelsLikeEl = document.getElementById("feels-like");
-const humidityEl = document.getElementById("humidity");
-const precipitationEl = document.getElementById("precipitation");
-const windSpeedEl = document.getElementById("wind-speed");
-
-const uvIndexEl = document.getElementById("uv-index");
-const sunriseEl = document.getElementById("sunrise-time");
-const sunsetEl = document.getElementById("sunset-time");
-const weatherInfo = document.getElementById("weather-info");
-
-// Local UI state
 let lastTempC = null; 
 let lastFeelsLikeC = null; 
 let currentWeatherData = null;
@@ -42,8 +42,7 @@ function formatTime(isoString) {
 }
 
 function updateWeatherFX(code, isDay) {
-    let fxContainer = document.getElementById("weather-fx");
-    fxContainer.innerHTML = ""; 
+    DOM.weatherFx.innerHTML = ""; 
     
     let count = 0;
     let type = "";
@@ -66,7 +65,7 @@ function updateWeatherFX(code, isDay) {
             el.style.animationDelay = (Math.random() * 1) + "s";
         }
         
-        fxContainer.appendChild(el);
+        DOM.weatherFx.appendChild(el);
     }
 }
 
@@ -82,11 +81,11 @@ export function updateTemperatureDisplay(isCelsius) {
     if (lastTempC === null) return; 
 
     if (isCelsius) {
-        temperature.textContent = lastTempC + "°";
-        feelsLikeEl.textContent = lastFeelsLikeC + "°";
+        DOM.temperature.textContent = lastTempC + "°";
+        DOM.feelsLikeEl.textContent = lastFeelsLikeC + "°";
     } else {
-        temperature.textContent = Math.round(toFahrenheit(lastTempC)) + "°";
-        feelsLikeEl.textContent = Math.round(toFahrenheit(lastFeelsLikeC)) + "°";
+        DOM.temperature.textContent = Math.round(toFahrenheit(lastTempC)) + "°";
+        DOM.feelsLikeEl.textContent = Math.round(toFahrenheit(lastFeelsLikeC)) + "°";
     }
 
     if (dailyForecastData !== null && hourlyForecastData !== null) {
@@ -95,23 +94,23 @@ export function updateTemperatureDisplay(isCelsius) {
 }
 
 export function displayWeather(data, name, isCelsius) {
-    error.style.display = "none"; 
-    weatherInfo.style.display = "block"; 
+    DOM.error.style.display = "none"; 
+    DOM.weatherInfo.style.display = "block"; 
     
     currentWeatherData = data.current; 
     dailyForecastData = data.daily;
     hourlyForecastData = data.hourly;
     
-    cityName.textContent = name;
+    DOM.cityName.textContent = name;
     
-    humidityEl.textContent = currentWeatherData.relative_humidity_2m + "%";
-    precipitationEl.textContent = currentWeatherData.precipitation + " mm";
+    DOM.humidityEl.textContent = currentWeatherData.relative_humidity_2m + "%";
+    DOM.precipitationEl.textContent = currentWeatherData.precipitation + " mm";
     let currentWind = currentWeatherData.wind_speed_10m;
-    windSpeedEl.textContent = currentWind + " km/h";
+    DOM.windSpeedEl.textContent = currentWind + " km/h";
 
-    uvIndexEl.textContent = dailyForecastData.uv_index_max[0];
-    sunriseEl.textContent = formatTime(dailyForecastData.sunrise[0]);
-    sunsetEl.textContent = formatTime(dailyForecastData.sunset[0]);
+    DOM.uvIndexEl.textContent = dailyForecastData.uv_index_max[0];
+    DOM.sunriseEl.textContent = formatTime(dailyForecastData.sunrise[0]);
+    DOM.sunsetEl.textContent = formatTime(dailyForecastData.sunset[0]);
 
     lastTempC = Math.round(currentWeatherData.temperature_2m);
     lastFeelsLikeC = Math.round(currentWeatherData.apparent_temperature);
@@ -123,13 +122,13 @@ export function displayWeather(data, name, isCelsius) {
     
     updateLivingInterface(lastTempC, currentWind, code, name, isDay);
 
-    weatherCondition.textContent = getWeatherDescription(code);
-    weatherIcon.className = "fas " + getWeatherIcon(code);
-    weatherIcon.setAttribute("style", getIconStyle(code));
+    DOM.weatherCondition.textContent = getWeatherDescription(code);
+    DOM.weatherIcon.className = "fas " + getWeatherIcon(code);
+    DOM.weatherIcon.setAttribute("style", getIconStyle(code));
 }
 
 function renderForecasts(isCelsius) {
-    hourlyContainer.innerHTML = ""; 
+    DOM.hourlyContainer.innerHTML = ""; 
     
     let currentHourStr = currentWeatherData.time.substring(0, 13); 
     let currentIndex = hourlyForecastData.time.findIndex(function(t) { 
@@ -150,7 +149,7 @@ function renderForecasts(isCelsius) {
         let iconClass = getWeatherIcon(code);
         let iconStyle = getIconStyle(code);
 
-        hourlyContainer.innerHTML += `
+        DOM.hourlyContainer.innerHTML += `
             <div class="hourly-card">
                 <p class="hourly-time">${displayHour}</p>
                 <i class="fas ${iconClass}" style="${iconStyle}"></i>
@@ -159,7 +158,7 @@ function renderForecasts(isCelsius) {
         `;
     }
 
-    dailyContainer.innerHTML = ""; 
+    DOM.dailyContainer.innerHTML = ""; 
 
     for (let i = 1; i <= 5; i++) {
         let dateString = dailyForecastData.time[i];
@@ -176,7 +175,7 @@ function renderForecasts(isCelsius) {
         let iconStyle = getIconStyle(code);
         let conditionText = getWeatherDescription(code);
         
-        dailyContainer.innerHTML += `
+        DOM.dailyContainer.innerHTML += `
             <div class="daily-row">
                 <div class="daily-day">${dayName}</div>
                 <div class="daily-condition">
@@ -192,7 +191,7 @@ function renderForecasts(isCelsius) {
 }
 
 export function renderHistoryTags(citiesArray, clickCallback) {
-    historyContainer.innerHTML = ""; 
+    DOM.historyContainer.innerHTML = ""; 
     citiesArray.forEach(function(city) {
         let btn = document.createElement("button");
         btn.className = "history-tag";
@@ -200,23 +199,23 @@ export function renderHistoryTags(citiesArray, clickCallback) {
         btn.addEventListener("click", function() {
             clickCallback(city);
         });
-        historyContainer.appendChild(btn);
+        DOM.historyContainer.appendChild(btn);
     });
 }
 
 export function showLoading() {
-    weatherInfo.style.display = "none";
-    error.style.display = "none";
-    loading.style.display = "block";
+    DOM.weatherInfo.style.display = "none";
+    DOM.error.style.display = "none";
+    DOM.loading.style.display = "block";
 }
 
 export function hideLoading() {
-    loading.style.display = "none";
+    DOM.loading.style.display = "none";
 }
 
 export function showError(message) {
-    weatherInfo.style.display = "none";
-    loading.style.display = "none";
-    error.textContent = message;
-    error.style.display = "block";
+    DOM.weatherInfo.style.display = "none";
+    DOM.loading.style.display = "none";
+    DOM.error.textContent = message;
+    DOM.error.style.display = "block";
 }
