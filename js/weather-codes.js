@@ -69,9 +69,9 @@ export function getWeatherIcon(weathercode) {
 }
 
 /**
- * Връща CSS inline стил за преливка (градиент) базиран на състоянието на времето.
- * * @param {number} weatherCode - WMO метеорологичен код
- * @returns {string} CSS стринг с дефиниран linear-gradient за текста (иконата)
+ * Returns a CSS inline style for a gradient based on weather conditions.
+ * @param {number} weatherCode - WMO weather code
+ * @returns {string} CSS string with defined linear-gradient for text (icon)
  */
 export function getIconStyle(weatherCode) {
     let gradient = "";

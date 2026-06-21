@@ -208,8 +208,8 @@ export function displayWeather(data, name, isCelsius) {
 }
 
 /**
- * Рендира почасовата и дневната прогноза в DOM.
- * * @param {boolean} isCelsius - Показва дали температурите да се рендират в Целзий
+ * Renders hourly and daily forecasts in the DOM.
+ * @param {boolean} isCelsius - True to display temperatures in Celsius, false for Fahrenheit
  */
 function renderForecasts(isCelsius) {
     DOM.hourlyContainer.innerHTML = ""; 
@@ -298,7 +298,7 @@ export function renderHistoryTags(citiesArray, clickCallback) {
 }
 
 /**
- * Показва лоудинг анимация и скрива останалото съдържание.
+ * Shows loading animation and hides other content.
  */
 export function showLoading() {
     DOM.weatherInfo.style.display = "none";
@@ -307,15 +307,15 @@ export function showLoading() {
 }
 
 /**
- * Скрива лоудинг анимацията.
+ * Hides the loading animation.
  */
 export function hideLoading() {
     DOM.loading.style.display = "none";
 }
 
 /**
- * Показва червено каре със съобщение за грешка.
- * * @param {string} message - Текстът на грешката, която трябва да се покаже
+ * Displays a red box with an error message.
+ * @param {string} message - The error text to display
  */
 export function showError(message) {
     DOM.weatherInfo.style.display = "none";
